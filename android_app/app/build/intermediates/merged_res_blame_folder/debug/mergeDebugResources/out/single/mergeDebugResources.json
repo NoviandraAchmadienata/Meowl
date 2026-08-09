@@ -1,210 +1,214 @@
 [
     {
-        "merged": "com.meowl.app-debug-45:/drawable_bg_btn_play.xml.flat",
-        "source": "com.meowl.app-main-47:/drawable/bg_btn_play.xml"
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-debug-45:\\drawable_ic_cat_ear_right_purple.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-main-47:\\drawable\\ic_cat_ear_right_purple.xml"
     },
     {
-        "merged": "com.meowl.app-debug-45:/drawable_ic_history.xml.flat",
-        "source": "com.meowl.app-main-47:/drawable/ic_history.xml"
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-debug-45:\\drawable_ic_play.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-main-47:\\drawable\\ic_play.xml"
     },
     {
-        "merged": "com.meowl.app-debug-45:/drawable_ic_pause.xml.flat",
-        "source": "com.meowl.app-main-47:/drawable/ic_pause.xml"
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-debug-45:\\mipmap-anydpi-v26_ic_launcher.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-main-47:\\mipmap-anydpi-v26\\ic_launcher.xml"
     },
     {
-        "merged": "com.meowl.app-debug-45:/drawable_bg_oled_screen.xml.flat",
-        "source": "com.meowl.app-main-47:/drawable/bg_oled_screen.xml"
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-debug-45:\\drawable_avd_eye_blink.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-main-47:\\drawable\\avd_eye_blink.xml"
     },
     {
-        "merged": "com.meowl.app-debug-45:/drawable_bg_cat_casing_blue.xml.flat",
-        "source": "com.meowl.app-main-47:/drawable/bg_cat_casing_blue.xml"
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-debug-45:\\mipmap-anydpi-v26_ic_launcher_blue.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-main-47:\\mipmap-anydpi-v26\\ic_launcher_blue.xml"
     },
     {
-        "merged": "com.meowl.app-debug-45:/drawable_ic_check.xml.flat",
-        "source": "com.meowl.app-main-47:/drawable/ic_check.xml"
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-debug-45:\\anim_widget_eye_fade_in.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-main-47:\\anim\\widget_eye_fade_in.xml"
     },
     {
-        "merged": "com.meowl.app-debug-45:/drawable_bg_cyan_eye.xml.flat",
-        "source": "com.meowl.app-main-47:/drawable/bg_cyan_eye.xml"
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-debug-45:\\drawable_ic_envelope.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-main-47:\\drawable\\ic_envelope.xml"
     },
     {
-        "merged": "com.meowl.app-debug-45:/mipmap-anydpi-v26_ic_launcher_yellow_round.xml.flat",
-        "source": "com.meowl.app-main-47:/mipmap-anydpi-v26/ic_launcher_yellow_round.xml"
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-debug-45:\\drawable_bg_cat_casing_blue.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-main-47:\\drawable\\bg_cat_casing_blue.xml"
     },
     {
-        "merged": "com.meowl.app-debug-45:/drawable_ic_cat_ear_right.xml.flat",
-        "source": "com.meowl.app-main-47:/drawable/ic_cat_ear_right.xml"
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-debug-45:\\drawable_ic_launcher_background.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-main-47:\\drawable\\ic_launcher_background.xml"
     },
     {
-        "merged": "com.meowl.app-debug-45:/drawable_ic_launcher_foreground.xml.flat",
-        "source": "com.meowl.app-main-47:/drawable/ic_launcher_foreground.xml"
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-debug-45:\\drawable_ic_launcher_foreground.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-main-47:\\drawable\\ic_launcher_foreground.xml"
     },
     {
-        "merged": "com.meowl.app-debug-45:/drawable_ic_cat_ear_right_blue.xml.flat",
-        "source": "com.meowl.app-main-47:/drawable/ic_cat_ear_right_blue.xml"
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-debug-45:\\drawable_ic_sun.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-main-47:\\drawable\\ic_sun.xml"
     },
     {
-        "merged": "com.meowl.app-debug-45:/drawable_ic_cat_ear_left_blue.xml.flat",
-        "source": "com.meowl.app-main-47:/drawable/ic_cat_ear_left_blue.xml"
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-debug-45:\\mipmap-anydpi-v26_ic_launcher_blue_round.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-main-47:\\mipmap-anydpi-v26\\ic_launcher_blue_round.xml"
     },
     {
-        "merged": "com.meowl.app-debug-45:/drawable_ic_paw.xml.flat",
-        "source": "com.meowl.app-main-47:/drawable/ic_paw.xml"
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-debug-45:\\drawable_ic_cat_ear_left.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-main-47:\\drawable\\ic_cat_ear_left.xml"
     },
     {
-        "merged": "com.meowl.app-debug-45:/drawable_ic_launcher_background.xml.flat",
-        "source": "com.meowl.app-main-47:/drawable/ic_launcher_background.xml"
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-debug-45:\\drawable_ic_cat_ear_right_yellow.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-main-47:\\drawable\\ic_cat_ear_right_yellow.xml"
     },
     {
-        "merged": "com.meowl.app-debug-45:/drawable_ic_trash.xml.flat",
-        "source": "com.meowl.app-main-47:/drawable/ic_trash.xml"
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-debug-45:\\drawable_bg_cat_casing_pink.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-main-47:\\drawable\\bg_cat_casing_pink.xml"
     },
     {
-        "merged": "com.meowl.app-debug-45:/drawable_ic_play.xml.flat",
-        "source": "com.meowl.app-main-47:/drawable/ic_play.xml"
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-debug-45:\\drawable_ic_cat_ear_left_blue.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-main-47:\\drawable\\ic_cat_ear_left_blue.xml"
     },
     {
-        "merged": "com.meowl.app-debug-45:/drawable_ic_stop.xml.flat",
-        "source": "com.meowl.app-main-47:/drawable/ic_stop.xml"
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-debug-45:\\drawable_ic_pause.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-main-47:\\drawable\\ic_pause.xml"
     },
     {
-        "merged": "com.meowl.app-debug-45:/mipmap-anydpi-v26_ic_launcher_purple_round.xml.flat",
-        "source": "com.meowl.app-main-47:/mipmap-anydpi-v26/ic_launcher_purple_round.xml"
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-debug-45:\\xml_meowl_widget_info.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-main-47:\\xml\\meowl_widget_info.xml"
     },
     {
-        "merged": "com.meowl.app-debug-45:/drawable_bg_cat_casing_purple.xml.flat",
-        "source": "com.meowl.app-main-47:/drawable/bg_cat_casing_purple.xml"
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-debug-45:\\drawable_bg_btn_ping.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-main-47:\\drawable\\bg_btn_ping.xml"
     },
     {
-        "merged": "com.meowl.app-debug-45:/drawable_ic_star.xml.flat",
-        "source": "com.meowl.app-main-47:/drawable/ic_star.xml"
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-debug-45:\\drawable_bg_cyan_eye.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-main-47:\\drawable\\bg_cyan_eye.xml"
     },
     {
-        "merged": "com.meowl.app-debug-45:/drawable_bg_cat_casing_yellow.xml.flat",
-        "source": "com.meowl.app-main-47:/drawable/bg_cat_casing_yellow.xml"
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-debug-45:\\anim_widget_eye_fade_out.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-main-47:\\anim\\widget_eye_fade_out.xml"
+    },
+    {
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-debug-45:\\drawable_ic_check.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-main-47:\\drawable\\ic_check.xml"
+    },
+    {
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-debug-45:\\drawable_bg_cat_casing_yellow.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-main-47:\\drawable\\bg_cat_casing_yellow.xml"
     },
     {
         "merged": "com.meowl.app-debug-45:/layout_widget_meowl_cat.xml.flat",
         "source": "com.meowl.app-main-47:/layout/widget_meowl_cat.xml"
     },
     {
-        "merged": "com.meowl.app-debug-45:/drawable_ic_heart.xml.flat",
-        "source": "com.meowl.app-main-47:/drawable/ic_heart.xml"
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-debug-45:\\xml_backup_rules.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-main-47:\\xml\\backup_rules.xml"
     },
     {
-        "merged": "com.meowl.app-debug-45:/drawable_ic_settings.xml.flat",
-        "source": "com.meowl.app-main-47:/drawable/ic_settings.xml"
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-debug-45:\\drawable_bg_btn_play.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-main-47:\\drawable\\bg_btn_play.xml"
     },
     {
-        "merged": "com.meowl.app-debug-45:/drawable_ic_launcher_foreground_purple.xml.flat",
-        "source": "com.meowl.app-main-47:/drawable/ic_launcher_foreground_purple.xml"
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-debug-45:\\layout_widget_meowl_cat.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-main-47:\\layout\\widget_meowl_cat.xml"
     },
     {
-        "merged": "com.meowl.app-debug-45:/drawable_avd_idle_eyes_blink.xml.flat",
-        "source": "com.meowl.app-main-47:/drawable/avd_idle_eyes_blink.xml"
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-debug-45:\\drawable_ic_moon.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-main-47:\\drawable\\ic_moon.xml"
     },
     {
-        "merged": "com.meowl.app-debug-45:/drawable_ic_cat_ear_left.xml.flat",
-        "source": "com.meowl.app-main-47:/drawable/ic_cat_ear_left.xml"
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-debug-45:\\drawable_ic_launcher_foreground_purple.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-main-47:\\drawable\\ic_launcher_foreground_purple.xml"
     },
     {
-        "merged": "com.meowl.app-debug-45:/anim_widget_eye_fade_in.xml.flat",
-        "source": "com.meowl.app-main-47:/anim/widget_eye_fade_in.xml"
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-debug-45:\\drawable_ic_launcher_foreground_blue.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-main-47:\\drawable\\ic_launcher_foreground_blue.xml"
     },
     {
-        "merged": "com.meowl.app-debug-45:/drawable_ic_launcher_foreground_yellow.xml.flat",
-        "source": "com.meowl.app-main-47:/drawable/ic_launcher_foreground_yellow.xml"
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-debug-45:\\drawable_avd_idle_eyes_blink.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-main-47:\\drawable\\avd_idle_eyes_blink.xml"
     },
     {
-        "merged": "com.meowl.app-debug-45:/xml_meowl_widget_info.xml.flat",
-        "source": "com.meowl.app-main-47:/xml/meowl_widget_info.xml"
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-debug-45:\\mipmap-anydpi-v26_ic_launcher_yellow.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-main-47:\\mipmap-anydpi-v26\\ic_launcher_yellow.xml"
     },
     {
-        "merged": "com.meowl.app-debug-45:/drawable_ic_launcher_foreground_blue.xml.flat",
-        "source": "com.meowl.app-main-47:/drawable/ic_launcher_foreground_blue.xml"
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-debug-45:\\drawable_bg_cat_casing_purple.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-main-47:\\drawable\\bg_cat_casing_purple.xml"
     },
     {
-        "merged": "com.meowl.app-debug-45:/drawable_ic_envelope.xml.flat",
-        "source": "com.meowl.app-main-47:/drawable/ic_envelope.xml"
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-debug-45:\\drawable_ic_paw.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-main-47:\\drawable\\ic_paw.xml"
     },
     {
-        "merged": "com.meowl.app-debug-45:/drawable_avd_eye_blink.xml.flat",
-        "source": "com.meowl.app-main-47:/drawable/avd_eye_blink.xml"
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-debug-45:\\drawable_bg_btn_record.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-main-47:\\drawable\\bg_btn_record.xml"
     },
     {
-        "merged": "com.meowl.app-debug-45:/mipmap-anydpi-v26_ic_launcher_round.xml.flat",
-        "source": "com.meowl.app-main-47:/mipmap-anydpi-v26/ic_launcher_round.xml"
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-debug-45:\\drawable_ic_star.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-main-47:\\drawable\\ic_star.xml"
     },
     {
-        "merged": "com.meowl.app-debug-45:/mipmap-anydpi-v26_ic_launcher_blue_round.xml.flat",
-        "source": "com.meowl.app-main-47:/mipmap-anydpi-v26/ic_launcher_blue_round.xml"
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-debug-45:\\drawable_ic_cat_ear_left_purple.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-main-47:\\drawable\\ic_cat_ear_left_purple.xml"
     },
     {
-        "merged": "com.meowl.app-debug-45:/drawable_bg_btn_ping.xml.flat",
-        "source": "com.meowl.app-main-47:/drawable/bg_btn_ping.xml"
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-debug-45:\\drawable_ic_launcher_foreground_yellow.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-main-47:\\drawable\\ic_launcher_foreground_yellow.xml"
     },
     {
-        "merged": "com.meowl.app-debug-45:/drawable_ic_sun.xml.flat",
-        "source": "com.meowl.app-main-47:/drawable/ic_sun.xml"
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-debug-45:\\xml_data_extraction_rules.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-main-47:\\xml\\data_extraction_rules.xml"
     },
     {
-        "merged": "com.meowl.app-debug-45:/drawable_ic_cat_ear_left_purple.xml.flat",
-        "source": "com.meowl.app-main-47:/drawable/ic_cat_ear_left_purple.xml"
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-debug-45:\\drawable_ic_cat_ear_right.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-main-47:\\drawable\\ic_cat_ear_right.xml"
     },
     {
-        "merged": "com.meowl.app-debug-45:/drawable_ic_cancel.xml.flat",
-        "source": "com.meowl.app-main-47:/drawable/ic_cancel.xml"
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-debug-45:\\drawable_ic_cancel.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-main-47:\\drawable\\ic_cancel.xml"
     },
     {
-        "merged": "com.meowl.app-debug-45:/anim_widget_eye_fade_out.xml.flat",
-        "source": "com.meowl.app-main-47:/anim/widget_eye_fade_out.xml"
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-debug-45:\\drawable_ic_settings.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-main-47:\\drawable\\ic_settings.xml"
     },
     {
-        "merged": "com.meowl.app-debug-45:/drawable_ic_moon.xml.flat",
-        "source": "com.meowl.app-main-47:/drawable/ic_moon.xml"
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-debug-45:\\drawable_ic_cat_ear_right_blue.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-main-47:\\drawable\\ic_cat_ear_right_blue.xml"
     },
     {
-        "merged": "com.meowl.app-debug-45:/mipmap-anydpi-v26_ic_launcher_blue.xml.flat",
-        "source": "com.meowl.app-main-47:/mipmap-anydpi-v26/ic_launcher_blue.xml"
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-debug-45:\\drawable_ic_heart.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-main-47:\\drawable\\ic_heart.xml"
     },
     {
-        "merged": "com.meowl.app-debug-45:/mipmap-anydpi-v26_ic_launcher_yellow.xml.flat",
-        "source": "com.meowl.app-main-47:/mipmap-anydpi-v26/ic_launcher_yellow.xml"
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-debug-45:\\mipmap-anydpi-v26_ic_launcher_round.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-main-47:\\mipmap-anydpi-v26\\ic_launcher_round.xml"
     },
     {
-        "merged": "com.meowl.app-debug-45:/xml_backup_rules.xml.flat",
-        "source": "com.meowl.app-main-47:/xml/backup_rules.xml"
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-debug-45:\\drawable_ic_history.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-main-47:\\drawable\\ic_history.xml"
     },
     {
-        "merged": "com.meowl.app-debug-45:/drawable_ic_cat_ear_left_yellow.xml.flat",
-        "source": "com.meowl.app-main-47:/drawable/ic_cat_ear_left_yellow.xml"
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-debug-45:\\drawable_ic_cat_ear_left_yellow.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-main-47:\\drawable\\ic_cat_ear_left_yellow.xml"
     },
     {
-        "merged": "com.meowl.app-debug-45:/drawable_bg_btn_record.xml.flat",
-        "source": "com.meowl.app-main-47:/drawable/bg_btn_record.xml"
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-debug-45:\\mipmap-anydpi-v26_ic_launcher_purple_round.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-main-47:\\mipmap-anydpi-v26\\ic_launcher_purple_round.xml"
     },
     {
-        "merged": "com.meowl.app-debug-45:/drawable_ic_cat_ear_right_yellow.xml.flat",
-        "source": "com.meowl.app-main-47:/drawable/ic_cat_ear_right_yellow.xml"
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-debug-45:\\mipmap-anydpi-v26_ic_launcher_purple.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-main-47:\\mipmap-anydpi-v26\\ic_launcher_purple.xml"
     },
     {
-        "merged": "com.meowl.app-debug-45:/xml_data_extraction_rules.xml.flat",
-        "source": "com.meowl.app-main-47:/xml/data_extraction_rules.xml"
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-debug-45:\\mipmap-anydpi-v26_ic_launcher_yellow_round.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-main-47:\\mipmap-anydpi-v26\\ic_launcher_yellow_round.xml"
     },
     {
-        "merged": "com.meowl.app-debug-45:/drawable_ic_cat_ear_right_purple.xml.flat",
-        "source": "com.meowl.app-main-47:/drawable/ic_cat_ear_right_purple.xml"
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-debug-45:\\drawable_bg_oled_screen.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-main-47:\\drawable\\bg_oled_screen.xml"
     },
     {
-        "merged": "com.meowl.app-debug-45:/mipmap-anydpi-v26_ic_launcher.xml.flat",
-        "source": "com.meowl.app-main-47:/mipmap-anydpi-v26/ic_launcher.xml"
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-debug-45:\\drawable_ic_trash.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-main-47:\\drawable\\ic_trash.xml"
     },
     {
-        "merged": "com.meowl.app-debug-45:/drawable_bg_cat_casing_pink.xml.flat",
-        "source": "com.meowl.app-main-47:/drawable/bg_cat_casing_pink.xml"
-    },
-    {
-        "merged": "com.meowl.app-debug-45:/mipmap-anydpi-v26_ic_launcher_purple.xml.flat",
-        "source": "com.meowl.app-main-47:/mipmap-anydpi-v26/ic_launcher_purple.xml"
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-debug-45:\\drawable_ic_stop.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\9.5.0\\com.meowl.app-main-47:\\drawable\\ic_stop.xml"
     }
 ]

@@ -62,6 +62,7 @@ class MainActivity : ComponentActivity() {
     private var playingFilePath by mutableStateOf<String?>(null)
     private var currentRecordingFile by mutableStateOf<File?>(null)
     private var isDarkModeState by mutableStateOf(true)
+    private var incomingConnectRequesterId by mutableStateOf<String?>(null)
 
     private val mainHandler = Handler(Looper.getMainLooper())
     private var syncRunnable: Runnable? = null
@@ -164,7 +165,6 @@ class MainActivity : ComponentActivity() {
                             Toast.makeText(this@MainActivity, "Koneksi diterima oleh $partnerId!", Toast.LENGTH_LONG).show()
                             if (prefsManager.targetId.isEmpty() || prefsManager.targetId != partnerId) {
                                 prefsManager.targetId = partnerId
-                                targetIdText = partnerId
                                 MeowlCatWidgetProvider.updateAllWidgets(this@MainActivity, "IDLE", "ONLINE · READY", unreadCount)
                             }
                         }
@@ -363,9 +363,6 @@ class MainActivity : ComponentActivity() {
         var vpsHostText by remember { mutableStateOf(prefsManager.vpsServerHost) }
         var gainSlider by remember { mutableStateOf(prefsManager.speakerGain.toFloat()) }
         var themeColor by remember { mutableStateOf(prefsManager.casingTheme) }
-
-        // Incoming Connection Request State
-        var incomingConnectRequesterId by remember { mutableStateOf<String?>(null) }
 
         // Dynamic Color Tokens for Light Mode vs Dark Mode
         val appBgColor = if (isDarkModeState) Color(0xFF0D0F14) else Color(0xFFF3F4F6)

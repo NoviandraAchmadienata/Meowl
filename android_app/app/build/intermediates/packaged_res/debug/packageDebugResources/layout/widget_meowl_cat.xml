@@ -77,14 +77,14 @@
             android:background="@drawable/bg_oled_screen"
             android:padding="4dp">
 
-            <!-- 1. STATE IDLE: Guaranteed 100% Continuous Auto-Blinking ViewFlipper -->
+            <!-- 1. STATE IDLE: Continuous Auto-Blinking & Winking ViewFlipper -->
             <ViewFlipper
                 android:id="@+id/flipper_idle_eyes"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
                 android:autoStart="true"
-                android:flipInterval="3200"
+                android:flipInterval="800"
                 android:inAnimation="@anim/widget_eye_fade_in"
                 android:outAnimation="@anim/widget_eye_fade_out"
                 android:visibility="visible">
@@ -109,7 +109,7 @@
                         android:contentDescription="Eye Right Open" />
                 </LinearLayout>
 
-                <!-- Frame 2: Natural Smooth Blink Slit -->
+                <!-- Frame 2: Open Cyan Eyes (Hold) -->
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -117,15 +117,91 @@
                     android:gravity="center">
                     <ImageView
                         android:layout_width="18dp"
-                        android:layout_height="6dp"
+                        android:layout_height="30dp"
+                        android:layout_marginEnd="16dp"
+                        android:src="@drawable/bg_cyan_eye"
+                        android:contentDescription="Eye Left Open" />
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="30dp"
+                        android:src="@drawable/bg_cyan_eye"
+                        android:contentDescription="Eye Right Open" />
+                </LinearLayout>
+
+                <!-- Frame 3: Quick Fast Blink Slit -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center">
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="4dp"
                         android:layout_marginEnd="16dp"
                         android:src="@drawable/bg_cyan_eye"
                         android:contentDescription="Eye Left Blink Slit" />
                     <ImageView
                         android:layout_width="18dp"
-                        android:layout_height="6dp"
+                        android:layout_height="4dp"
                         android:src="@drawable/bg_cyan_eye"
                         android:contentDescription="Eye Right Blink Slit" />
+                </LinearLayout>
+
+                <!-- Frame 4: Open Cyan Eyes -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center">
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="30dp"
+                        android:layout_marginEnd="16dp"
+                        android:src="@drawable/bg_cyan_eye"
+                        android:contentDescription="Eye Left Open" />
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="30dp"
+                        android:src="@drawable/bg_cyan_eye"
+                        android:contentDescription="Eye Right Open" />
+                </LinearLayout>
+
+                <!-- Frame 5: Open Cyan Eyes (Hold) -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center">
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="30dp"
+                        android:layout_marginEnd="16dp"
+                        android:src="@drawable/bg_cyan_eye"
+                        android:contentDescription="Eye Left Open" />
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="30dp"
+                        android:src="@drawable/bg_cyan_eye"
+                        android:contentDescription="Eye Right Open" />
+                </LinearLayout>
+
+                <!-- Frame 6: Cute Cat Wink (Left Open, Right Squinted Wink) -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center">
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="30dp"
+                        android:layout_marginEnd="16dp"
+                        android:src="@drawable/bg_cyan_eye"
+                        android:contentDescription="Eye Left Open" />
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="8dp"
+                        android:src="@drawable/bg_cyan_eye"
+                        android:contentDescription="Eye Right Wink" />
                 </LinearLayout>
             </ViewFlipper>
 
