@@ -77,132 +77,92 @@
             android:background="@drawable/bg_oled_screen"
             android:padding="4dp">
 
-            <!-- 1. STATE IDLE: Continuous Auto-Blinking & Winking ViewFlipper -->
+            <!-- 1. STATE IDLE: Ultra-Fluid Seamless Gaze-Sliding & Eased Multi-Expression ViewFlipper (200ms Resolution) -->
             <ViewFlipper
                 android:id="@+id/flipper_idle_eyes"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
                 android:autoStart="true"
-                android:flipInterval="800"
-                android:inAnimation="@anim/widget_eye_fade_in"
-                android:outAnimation="@anim/widget_eye_fade_out"
+                android:flipInterval="200"
                 android:visibility="visible">
 
-                <!-- Frame 1: Open Cyan Eyes -->
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center">
-                    <ImageView
-                        android:id="@+id/img_idle_eyes_bitmap"
-                        android:layout_width="18dp"
-                        android:layout_height="30dp"
-                        android:layout_marginEnd="16dp"
-                        android:src="@drawable/bg_cyan_eye"
-                        android:contentDescription="Eye Left Open" />
-                    <ImageView
-                        android:layout_width="18dp"
-                        android:layout_height="30dp"
-                        android:src="@drawable/bg_cyan_eye"
-                        android:contentDescription="Eye Right Open" />
-                </LinearLayout>
+                <!-- Stage 1: Center Open Gaze Hold (2.0s = 10 frames) -->
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center"><ImageView android:layout_width="18dp" android:layout_height="30dp" android:layout_marginEnd="16dp" android:src="@drawable/bg_cyan_eye" /><ImageView android:layout_width="18dp" android:layout_height="30dp" android:src="@drawable/bg_cyan_eye" /></LinearLayout>
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center"><ImageView android:layout_width="18dp" android:layout_height="30dp" android:layout_marginEnd="16dp" android:src="@drawable/bg_cyan_eye" /><ImageView android:layout_width="18dp" android:layout_height="30dp" android:src="@drawable/bg_cyan_eye" /></LinearLayout>
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center"><ImageView android:layout_width="18dp" android:layout_height="30dp" android:layout_marginEnd="16dp" android:src="@drawable/bg_cyan_eye" /><ImageView android:layout_width="18dp" android:layout_height="30dp" android:src="@drawable/bg_cyan_eye" /></LinearLayout>
 
-                <!-- Frame 2: Open Cyan Eyes (Hold) -->
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center">
-                    <ImageView
-                        android:layout_width="18dp"
-                        android:layout_height="30dp"
-                        android:layout_marginEnd="16dp"
-                        android:src="@drawable/bg_cyan_eye"
-                        android:contentDescription="Eye Left Open" />
-                    <ImageView
-                        android:layout_width="18dp"
-                        android:layout_height="30dp"
-                        android:src="@drawable/bg_cyan_eye"
-                        android:contentDescription="Eye Right Open" />
-                </LinearLayout>
+                <!-- Stage 2: Smooth Slide Left Transition (4dp -> 8dp -> 12dp) -->
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center" android:paddingRight="4dp"><ImageView android:layout_width="18dp" android:layout_height="30dp" android:layout_marginEnd="16dp" android:src="@drawable/bg_cyan_eye" /><ImageView android:layout_width="18dp" android:layout_height="30dp" android:src="@drawable/bg_cyan_eye" /></LinearLayout>
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center" android:paddingRight="8dp"><ImageView android:layout_width="18dp" android:layout_height="30dp" android:layout_marginEnd="16dp" android:src="@drawable/bg_cyan_eye" /><ImageView android:layout_width="18dp" android:layout_height="30dp" android:src="@drawable/bg_cyan_eye" /></LinearLayout>
 
-                <!-- Frame 3: Quick Fast Blink Slit -->
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center">
-                    <ImageView
-                        android:layout_width="18dp"
-                        android:layout_height="4dp"
-                        android:layout_marginEnd="16dp"
-                        android:src="@drawable/bg_cyan_eye"
-                        android:contentDescription="Eye Left Blink Slit" />
-                    <ImageView
-                        android:layout_width="18dp"
-                        android:layout_height="4dp"
-                        android:src="@drawable/bg_cyan_eye"
-                        android:contentDescription="Eye Right Blink Slit" />
-                </LinearLayout>
+                <!-- Stage 3: Glance Left Hold (2.0s = 10 frames) -->
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center" android:paddingRight="12dp"><ImageView android:layout_width="18dp" android:layout_height="30dp" android:layout_marginEnd="16dp" android:src="@drawable/bg_cyan_eye" /><ImageView android:layout_width="18dp" android:layout_height="30dp" android:src="@drawable/bg_cyan_eye" /></LinearLayout>
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center" android:paddingRight="12dp"><ImageView android:layout_width="18dp" android:layout_height="30dp" android:layout_marginEnd="16dp" android:src="@drawable/bg_cyan_eye" /><ImageView android:layout_width="18dp" android:layout_height="30dp" android:src="@drawable/bg_cyan_eye" /></LinearLayout>
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center" android:paddingRight="12dp"><ImageView android:layout_width="18dp" android:layout_height="30dp" android:layout_marginEnd="16dp" android:src="@drawable/bg_cyan_eye" /><ImageView android:layout_width="18dp" android:layout_height="30dp" android:src="@drawable/bg_cyan_eye" /></LinearLayout>
 
-                <!-- Frame 4: Open Cyan Eyes -->
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center">
-                    <ImageView
-                        android:layout_width="18dp"
-                        android:layout_height="30dp"
-                        android:layout_marginEnd="16dp"
-                        android:src="@drawable/bg_cyan_eye"
-                        android:contentDescription="Eye Left Open" />
-                    <ImageView
-                        android:layout_width="18dp"
-                        android:layout_height="30dp"
-                        android:src="@drawable/bg_cyan_eye"
-                        android:contentDescription="Eye Right Open" />
-                </LinearLayout>
+                <!-- Stage 4: Smooth Slide Back to Center (8dp -> 4dp -> 0dp) -->
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center" android:paddingRight="8dp"><ImageView android:layout_width="18dp" android:layout_height="30dp" android:layout_marginEnd="16dp" android:src="@drawable/bg_cyan_eye" /><ImageView android:layout_width="18dp" android:layout_height="30dp" android:src="@drawable/bg_cyan_eye" /></LinearLayout>
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center" android:paddingRight="4dp"><ImageView android:layout_width="18dp" android:layout_height="30dp" android:layout_marginEnd="16dp" android:src="@drawable/bg_cyan_eye" /><ImageView android:layout_width="18dp" android:layout_height="30dp" android:src="@drawable/bg_cyan_eye" /></LinearLayout>
 
-                <!-- Frame 5: Open Cyan Eyes (Hold) -->
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center">
-                    <ImageView
-                        android:layout_width="18dp"
-                        android:layout_height="30dp"
-                        android:layout_marginEnd="16dp"
-                        android:src="@drawable/bg_cyan_eye"
-                        android:contentDescription="Eye Left Open" />
-                    <ImageView
-                        android:layout_width="18dp"
-                        android:layout_height="30dp"
-                        android:src="@drawable/bg_cyan_eye"
-                        android:contentDescription="Eye Right Open" />
-                </LinearLayout>
+                <!-- Stage 5: Center Open Gaze Hold (1.0s = 5 frames) -->
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center"><ImageView android:layout_width="18dp" android:layout_height="30dp" android:layout_marginEnd="16dp" android:src="@drawable/bg_cyan_eye" /><ImageView android:layout_width="18dp" android:layout_height="30dp" android:src="@drawable/bg_cyan_eye" /></LinearLayout>
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center"><ImageView android:layout_width="18dp" android:layout_height="30dp" android:layout_marginEnd="16dp" android:src="@drawable/bg_cyan_eye" /><ImageView android:layout_width="18dp" android:layout_height="30dp" android:src="@drawable/bg_cyan_eye" /></LinearLayout>
 
-                <!-- Frame 6: Cute Cat Wink (Left Open, Right Squinted Wink) -->
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center">
-                    <ImageView
-                        android:layout_width="18dp"
-                        android:layout_height="30dp"
-                        android:layout_marginEnd="16dp"
-                        android:src="@drawable/bg_cyan_eye"
-                        android:contentDescription="Eye Left Open" />
-                    <ImageView
-                        android:layout_width="18dp"
-                        android:layout_height="8dp"
-                        android:src="@drawable/bg_cyan_eye"
-                        android:contentDescription="Eye Right Wink" />
-                </LinearLayout>
+                <!-- Stage 6: Eased Organic Single Blink (30dp -> 18dp -> 4dp -> 18dp -> 30dp) -->
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center"><ImageView android:layout_width="18dp" android:layout_height="18dp" android:layout_marginEnd="16dp" android:src="@drawable/bg_cyan_eye" /><ImageView android:layout_width="18dp" android:layout_height="18dp" android:src="@drawable/bg_cyan_eye" /></LinearLayout>
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center"><ImageView android:layout_width="18dp" android:layout_height="4dp" android:layout_marginEnd="16dp" android:src="@drawable/bg_cyan_eye" /><ImageView android:layout_width="18dp" android:layout_height="4dp" android:src="@drawable/bg_cyan_eye" /></LinearLayout>
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center"><ImageView android:layout_width="18dp" android:layout_height="18dp" android:layout_marginEnd="16dp" android:src="@drawable/bg_cyan_eye" /><ImageView android:layout_width="18dp" android:layout_height="18dp" android:src="@drawable/bg_cyan_eye" /></LinearLayout>
+
+                <!-- Stage 7: Center Open Gaze Hold (1.0s = 5 frames) -->
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center"><ImageView android:layout_width="18dp" android:layout_height="30dp" android:layout_marginEnd="16dp" android:src="@drawable/bg_cyan_eye" /><ImageView android:layout_width="18dp" android:layout_height="30dp" android:src="@drawable/bg_cyan_eye" /></LinearLayout>
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center"><ImageView android:layout_width="18dp" android:layout_height="30dp" android:layout_marginEnd="16dp" android:src="@drawable/bg_cyan_eye" /><ImageView android:layout_width="18dp" android:layout_height="30dp" android:src="@drawable/bg_cyan_eye" /></LinearLayout>
+
+                <!-- Stage 8: Smooth Slide Right Transition (4dp -> 8dp -> 12dp) -->
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center" android:paddingLeft="4dp"><ImageView android:layout_width="18dp" android:layout_height="30dp" android:layout_marginEnd="16dp" android:src="@drawable/bg_cyan_eye" /><ImageView android:layout_width="18dp" android:layout_height="30dp" android:src="@drawable/bg_cyan_eye" /></LinearLayout>
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center" android:paddingLeft="8dp"><ImageView android:layout_width="18dp" android:layout_height="30dp" android:layout_marginEnd="16dp" android:src="@drawable/bg_cyan_eye" /><ImageView android:layout_width="18dp" android:layout_height="30dp" android:src="@drawable/bg_cyan_eye" /></LinearLayout>
+
+                <!-- Stage 9: Glance Right Hold (2.0s = 10 frames) -->
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center" android:paddingLeft="12dp"><ImageView android:layout_width="18dp" android:layout_height="30dp" android:layout_marginEnd="16dp" android:src="@drawable/bg_cyan_eye" /><ImageView android:layout_width="18dp" android:layout_height="30dp" android:src="@drawable/bg_cyan_eye" /></LinearLayout>
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center" android:paddingLeft="12dp"><ImageView android:layout_width="18dp" android:layout_height="30dp" android:layout_marginEnd="16dp" android:src="@drawable/bg_cyan_eye" /><ImageView android:layout_width="18dp" android:layout_height="30dp" android:src="@drawable/bg_cyan_eye" /></LinearLayout>
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center" android:paddingLeft="12dp"><ImageView android:layout_width="18dp" android:layout_height="30dp" android:layout_marginEnd="16dp" android:src="@drawable/bg_cyan_eye" /><ImageView android:layout_width="18dp" android:layout_height="30dp" android:src="@drawable/bg_cyan_eye" /></LinearLayout>
+
+                <!-- Stage 10: Smooth Slide Back to Center (8dp -> 4dp -> 0dp) -->
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center" android:paddingLeft="8dp"><ImageView android:layout_width="18dp" android:layout_height="30dp" android:layout_marginEnd="16dp" android:src="@drawable/bg_cyan_eye" /><ImageView android:layout_width="18dp" android:layout_height="30dp" android:src="@drawable/bg_cyan_eye" /></LinearLayout>
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center" android:paddingLeft="4dp"><ImageView android:layout_width="18dp" android:layout_height="30dp" android:layout_marginEnd="16dp" android:src="@drawable/bg_cyan_eye" /><ImageView android:layout_width="18dp" android:layout_height="30dp" android:src="@drawable/bg_cyan_eye" /></LinearLayout>
+
+                <!-- Stage 11: Center Open Gaze Hold (1.0s = 5 frames) -->
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center"><ImageView android:layout_width="18dp" android:layout_height="30dp" android:layout_marginEnd="16dp" android:src="@drawable/bg_cyan_eye" /><ImageView android:layout_width="18dp" android:layout_height="30dp" android:src="@drawable/bg_cyan_eye" /></LinearLayout>
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center"><ImageView android:layout_width="18dp" android:layout_height="30dp" android:layout_marginEnd="16dp" android:src="@drawable/bg_cyan_eye" /><ImageView android:layout_width="18dp" android:layout_height="30dp" android:src="@drawable/bg_cyan_eye" /></LinearLayout>
+
+                <!-- Stage 12: Eased RIGHT EYE WINK (30dp -> 18dp -> 4dp -> 18dp -> 30dp) -->
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center"><ImageView android:layout_width="18dp" android:layout_height="30dp" android:layout_marginEnd="16dp" android:src="@drawable/bg_cyan_eye" /><ImageView android:layout_width="18dp" android:layout_height="18dp" android:src="@drawable/bg_cyan_eye" /></LinearLayout>
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center"><ImageView android:layout_width="18dp" android:layout_height="30dp" android:layout_marginEnd="16dp" android:src="@drawable/bg_cyan_eye" /><ImageView android:layout_width="18dp" android:layout_height="4dp" android:src="@drawable/bg_cyan_eye" /></LinearLayout>
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center"><ImageView android:layout_width="18dp" android:layout_height="30dp" android:layout_marginEnd="16dp" android:src="@drawable/bg_cyan_eye" /><ImageView android:layout_width="18dp" android:layout_height="18dp" android:src="@drawable/bg_cyan_eye" /></LinearLayout>
+
+                <!-- Stage 13: Center Open Gaze Hold (1.6s = 8 frames) -->
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center"><ImageView android:layout_width="18dp" android:layout_height="30dp" android:layout_marginEnd="16dp" android:src="@drawable/bg_cyan_eye" /><ImageView android:layout_width="18dp" android:layout_height="30dp" android:src="@drawable/bg_cyan_eye" /></LinearLayout>
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center"><ImageView android:layout_width="18dp" android:layout_height="30dp" android:layout_marginEnd="16dp" android:src="@drawable/bg_cyan_eye" /><ImageView android:layout_width="18dp" android:layout_height="30dp" android:src="@drawable/bg_cyan_eye" /></LinearLayout>
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center"><ImageView android:layout_width="18dp" android:layout_height="30dp" android:layout_marginEnd="16dp" android:src="@drawable/bg_cyan_eye" /><ImageView android:layout_width="18dp" android:layout_height="30dp" android:src="@drawable/bg_cyan_eye" /></LinearLayout>
+
+                <!-- Stage 14: Eased Cute Happy Half-Moon Smile Squint (30dp -> 22dp -> 14dp -> 22dp -> 30dp) -->
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center"><ImageView android:layout_width="18dp" android:layout_height="22dp" android:layout_marginEnd="16dp" android:src="@drawable/bg_cyan_eye" /><ImageView android:layout_width="18dp" android:layout_height="22dp" android:src="@drawable/bg_cyan_eye" /></LinearLayout>
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center"><ImageView android:layout_width="18dp" android:layout_height="14dp" android:layout_marginEnd="16dp" android:src="@drawable/bg_cyan_eye" /><ImageView android:layout_width="18dp" android:layout_height="14dp" android:src="@drawable/bg_cyan_eye" /></LinearLayout>
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center"><ImageView android:layout_width="18dp" android:layout_height="22dp" android:layout_marginEnd="16dp" android:src="@drawable/bg_cyan_eye" /><ImageView android:layout_width="18dp" android:layout_height="22dp" android:src="@drawable/bg_cyan_eye" /></LinearLayout>
+
+                <!-- Stage 15: Center Open Gaze Hold (1.6s = 8 frames) -->
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center"><ImageView android:layout_width="18dp" android:layout_height="30dp" android:layout_marginEnd="16dp" android:src="@drawable/bg_cyan_eye" /><ImageView android:layout_width="18dp" android:layout_height="30dp" android:src="@drawable/bg_cyan_eye" /></LinearLayout>
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center"><ImageView android:layout_width="18dp" android:layout_height="30dp" android:layout_marginEnd="16dp" android:src="@drawable/bg_cyan_eye" /><ImageView android:layout_width="18dp" android:layout_height="30dp" android:src="@drawable/bg_cyan_eye" /></LinearLayout>
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center"><ImageView android:layout_width="18dp" android:layout_height="30dp" android:layout_marginEnd="16dp" android:src="@drawable/bg_cyan_eye" /><ImageView android:layout_width="18dp" android:layout_height="30dp" android:src="@drawable/bg_cyan_eye" /></LinearLayout>
+
+                <!-- Stage 16: Eased LEFT EYE WINK (30dp -> 18dp -> 4dp -> 18dp -> 30dp) -->
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center"><ImageView android:layout_width="18dp" android:layout_height="18dp" android:layout_marginEnd="16dp" android:src="@drawable/bg_cyan_eye" /><ImageView android:layout_width="18dp" android:layout_height="30dp" android:src="@drawable/bg_cyan_eye" /></LinearLayout>
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center"><ImageView android:layout_width="18dp" android:layout_height="4dp" android:layout_marginEnd="16dp" android:src="@drawable/bg_cyan_eye" /><ImageView android:layout_width="18dp" android:layout_height="30dp" android:src="@drawable/bg_cyan_eye" /></LinearLayout>
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center"><ImageView android:layout_width="18dp" android:layout_height="18dp" android:layout_marginEnd="16dp" android:src="@drawable/bg_cyan_eye" /><ImageView android:layout_width="18dp" android:layout_height="30dp" android:src="@drawable/bg_cyan_eye" /></LinearLayout>
+
+                <!-- Stage 17: Post-Wink Open Gaze Hold (2.0s = 10 frames) -->
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center"><ImageView android:layout_width="18dp" android:layout_height="30dp" android:layout_marginEnd="16dp" android:src="@drawable/bg_cyan_eye" /><ImageView android:layout_width="18dp" android:layout_height="30dp" android:src="@drawable/bg_cyan_eye" /></LinearLayout>
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center"><ImageView android:layout_width="18dp" android:layout_height="30dp" android:layout_marginEnd="16dp" android:src="@drawable/bg_cyan_eye" /><ImageView android:layout_width="18dp" android:layout_height="30dp" android:src="@drawable/bg_cyan_eye" /></LinearLayout>
             </ViewFlipper>
 
             <!-- 2. STATE RECORDING: Pulsing Red Dot + 7 Waveform Bars -->
@@ -243,7 +203,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="18dp"
                     android:autoStart="true"
-                    android:flipInterval="200">
+                    android:flipInterval="150">
 
                     <!-- Frame 1 -->
                     <LinearLayout android:layout_width="wrap_content" android:layout_height="18dp" android:orientation="horizontal" android:gravity="bottom">
@@ -265,6 +225,39 @@
                         <ImageView android:layout_width="3dp" android:layout_height="6dp"  android:layout_marginEnd="2dp" android:src="@drawable/bg_btn_record" android:contentDescription="r5"/>
                         <ImageView android:layout_width="3dp" android:layout_height="14dp" android:layout_marginEnd="2dp" android:src="@drawable/bg_btn_record" android:contentDescription="r6"/>
                         <ImageView android:layout_width="3dp" android:layout_height="4dp"  android:src="@drawable/bg_btn_record" android:contentDescription="r7"/>
+                    </LinearLayout>
+
+                    <!-- Frame 3 -->
+                    <LinearLayout android:layout_width="wrap_content" android:layout_height="18dp" android:orientation="horizontal" android:gravity="bottom">
+                        <ImageView android:layout_width="3dp" android:layout_height="6dp"  android:layout_marginEnd="2dp" android:src="@drawable/bg_btn_record" android:contentDescription="r1"/>
+                        <ImageView android:layout_width="3dp" android:layout_height="16dp" android:layout_marginEnd="2dp" android:src="@drawable/bg_btn_record" android:contentDescription="r2"/>
+                        <ImageView android:layout_width="3dp" android:layout_height="10dp" android:layout_marginEnd="2dp" android:src="@drawable/bg_btn_record" android:contentDescription="r3"/>
+                        <ImageView android:layout_width="3dp" android:layout_height="4dp"  android:layout_marginEnd="2dp" android:src="@drawable/bg_btn_record" android:contentDescription="r4"/>
+                        <ImageView android:layout_width="3dp" android:layout_height="12dp" android:layout_marginEnd="2dp" android:src="@drawable/bg_btn_record" android:contentDescription="r5"/>
+                        <ImageView android:layout_width="3dp" android:layout_height="8dp"  android:layout_marginEnd="2dp" android:src="@drawable/bg_btn_record" android:contentDescription="r6"/>
+                        <ImageView android:layout_width="3dp" android:layout_height="16dp" android:src="@drawable/bg_btn_record" android:contentDescription="r7"/>
+                    </LinearLayout>
+
+                    <!-- Frame 4 -->
+                    <LinearLayout android:layout_width="wrap_content" android:layout_height="18dp" android:orientation="horizontal" android:gravity="bottom">
+                        <ImageView android:layout_width="3dp" android:layout_height="16dp" android:layout_marginEnd="2dp" android:src="@drawable/bg_btn_record" android:contentDescription="r1"/>
+                        <ImageView android:layout_width="3dp" android:layout_height="8dp"  android:layout_marginEnd="2dp" android:src="@drawable/bg_btn_record" android:contentDescription="r2"/>
+                        <ImageView android:layout_width="3dp" android:layout_height="14dp" android:layout_marginEnd="2dp" android:src="@drawable/bg_btn_record" android:contentDescription="r3"/>
+                        <ImageView android:layout_width="3dp" android:layout_height="12dp" android:layout_marginEnd="2dp" android:src="@drawable/bg_btn_record" android:contentDescription="r4"/>
+                        <ImageView android:layout_width="3dp" android:layout_height="4dp"  android:layout_marginEnd="2dp" android:src="@drawable/bg_btn_record" android:contentDescription="r5"/>
+                        <ImageView android:layout_width="3dp" android:layout_height="16dp" android:layout_marginEnd="2dp" android:src="@drawable/bg_btn_record" android:contentDescription="r6"/>
+                        <ImageView android:layout_width="3dp" android:layout_height="6dp"  android:src="@drawable/bg_btn_record" android:contentDescription="r7"/>
+                    </LinearLayout>
+
+                    <!-- Frame 5 -->
+                    <LinearLayout android:layout_width="wrap_content" android:layout_height="18dp" android:orientation="horizontal" android:gravity="bottom">
+                        <ImageView android:layout_width="3dp" android:layout_height="8dp"  android:layout_marginEnd="2dp" android:src="@drawable/bg_btn_record" android:contentDescription="r1"/>
+                        <ImageView android:layout_width="3dp" android:layout_height="14dp" android:layout_marginEnd="2dp" android:src="@drawable/bg_btn_record" android:contentDescription="r2"/>
+                        <ImageView android:layout_width="3dp" android:layout_height="6dp"  android:layout_marginEnd="2dp" android:src="@drawable/bg_btn_record" android:contentDescription="r3"/>
+                        <ImageView android:layout_width="3dp" android:layout_height="16dp" android:layout_marginEnd="2dp" android:src="@drawable/bg_btn_record" android:contentDescription="r4"/>
+                        <ImageView android:layout_width="3dp" android:layout_height="10dp" android:layout_marginEnd="2dp" android:src="@drawable/bg_btn_record" android:contentDescription="r5"/>
+                        <ImageView android:layout_width="3dp" android:layout_height="4dp"  android:layout_marginEnd="2dp" android:src="@drawable/bg_btn_record" android:contentDescription="r6"/>
+                        <ImageView android:layout_width="3dp" android:layout_height="10dp" android:src="@drawable/bg_btn_record" android:contentDescription="r7"/>
                     </LinearLayout>
                 </ViewFlipper>
             </LinearLayout>
@@ -311,7 +304,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="22dp"
                     android:autoStart="true"
-                    android:flipInterval="200">
+                    android:flipInterval="150">
 
                     <!-- Frame A -->
                     <LinearLayout android:layout_width="wrap_content" android:layout_height="22dp" android:orientation="horizontal" android:gravity="bottom">
@@ -329,6 +322,33 @@
                         <ImageView android:layout_width="5dp" android:layout_height="12dp" android:layout_marginEnd="3dp" android:src="@drawable/bg_btn_play" android:contentDescription="v3"/>
                         <ImageView android:layout_width="5dp" android:layout_height="22dp" android:layout_marginEnd="3dp" android:src="@drawable/bg_btn_play" android:contentDescription="v4"/>
                         <ImageView android:layout_width="5dp" android:layout_height="9dp"  android:src="@drawable/bg_btn_play" android:contentDescription="v5"/>
+                    </LinearLayout>
+
+                    <!-- Frame C -->
+                    <LinearLayout android:layout_width="wrap_content" android:layout_height="22dp" android:orientation="horizontal" android:gravity="bottom">
+                        <ImageView android:layout_width="5dp" android:layout_height="12dp" android:layout_marginEnd="3dp" android:src="@drawable/bg_btn_play" android:contentDescription="v1"/>
+                        <ImageView android:layout_width="5dp" android:layout_height="22dp" android:layout_marginEnd="3dp" android:src="@drawable/bg_btn_play" android:contentDescription="v2"/>
+                        <ImageView android:layout_width="5dp" android:layout_height="8dp"  android:layout_marginEnd="3dp" android:src="@drawable/bg_btn_play" android:contentDescription="v3"/>
+                        <ImageView android:layout_width="5dp" android:layout_height="16dp" android:layout_marginEnd="3dp" android:src="@drawable/bg_btn_play" android:contentDescription="v4"/>
+                        <ImageView android:layout_width="5dp" android:layout_height="18dp" android:src="@drawable/bg_btn_play" android:contentDescription="v5"/>
+                    </LinearLayout>
+
+                    <!-- Frame D -->
+                    <LinearLayout android:layout_width="wrap_content" android:layout_height="22dp" android:orientation="horizontal" android:gravity="bottom">
+                        <ImageView android:layout_width="5dp" android:layout_height="22dp" android:layout_marginEnd="3dp" android:src="@drawable/bg_btn_play" android:contentDescription="v1"/>
+                        <ImageView android:layout_width="5dp" android:layout_height="8dp"  android:layout_marginEnd="3dp" android:src="@drawable/bg_btn_play" android:contentDescription="v2"/>
+                        <ImageView android:layout_width="5dp" android:layout_height="18dp" android:layout_marginEnd="3dp" android:src="@drawable/bg_btn_play" android:contentDescription="v3"/>
+                        <ImageView android:layout_width="5dp" android:layout_height="10dp" android:layout_marginEnd="3dp" android:src="@drawable/bg_btn_play" android:contentDescription="v4"/>
+                        <ImageView android:layout_width="5dp" android:layout_height="22dp" android:src="@drawable/bg_btn_play" android:contentDescription="v5"/>
+                    </LinearLayout>
+
+                    <!-- Frame E -->
+                    <LinearLayout android:layout_width="wrap_content" android:layout_height="22dp" android:orientation="horizontal" android:gravity="bottom">
+                        <ImageView android:layout_width="5dp" android:layout_height="10dp" android:layout_marginEnd="3dp" android:src="@drawable/bg_btn_play" android:contentDescription="v1"/>
+                        <ImageView android:layout_width="5dp" android:layout_height="16dp" android:layout_marginEnd="3dp" android:src="@drawable/bg_btn_play" android:contentDescription="v2"/>
+                        <ImageView android:layout_width="5dp" android:layout_height="22dp" android:layout_marginEnd="3dp" android:src="@drawable/bg_btn_play" android:contentDescription="v3"/>
+                        <ImageView android:layout_width="5dp" android:layout_height="8dp"  android:layout_marginEnd="3dp" android:src="@drawable/bg_btn_play" android:contentDescription="v4"/>
+                        <ImageView android:layout_width="5dp" android:layout_height="14dp" android:src="@drawable/bg_btn_play" android:contentDescription="v5"/>
                     </LinearLayout>
                 </ViewFlipper>
             </LinearLayout>

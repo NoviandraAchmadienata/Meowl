@@ -3,6 +3,7 @@ package com.meowl.app
 import android.Manifest
 import android.content.ComponentName
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -68,9 +69,10 @@ class MainActivity : ComponentActivity() {
     private var syncRunnable: Runnable? = null
 
     private val requestPermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (!isGranted) {
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val micGranted = permissions[Manifest.permission.RECORD_AUDIO] ?: false
+        if (!micGranted) {
             Toast.makeText(this, "Izin Mikrofon diperlukan untuk voicemail", Toast.LENGTH_LONG).show()
         }
     }
@@ -82,12 +84,24 @@ class MainActivity : ComponentActivity() {
         audioPlayer = AudioPlayer(this)
         isDarkModeState = prefsManager.isDarkMode
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+        val permissionsToRequest = mutableListOf(Manifest.permission.RECORD_AUDIO)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                permissionsToRequest.add(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
+
+        val ungrantedPermissions = permissionsToRequest.filter {
+            ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
+        }
+
+        if (ungrantedPermissions.isNotEmpty()) {
+            requestPermissionLauncher.launch(ungrantedPermissions.toTypedArray())
         }
 
         refreshVoicemailList()
         startPeriodicVpsSync()
+        com.meowl.app.network.MeowlRelayService.startService(this)
 
         setContent {
             MeowlDigitalAppUI()
@@ -130,10 +144,14 @@ class MainActivity : ComponentActivity() {
                             val localFolder = File(filesDir, "voicemails").apply { if (!exists()) mkdirs() }
 
                             for (remoteFile in remoteFiles) {
-                                val destFile = File(localFolder, remoteFile)
-                                if (!destFile.exists()) {
+                                val cleanName = remoteFile.replace(Regex("^(baru_|kirim_|lama_|fav_)+"), "")
+                                val existingMatch = localFolder.listFiles()?.any { it.name.endsWith(cleanName) } ?: false
+
+                                if (!existingMatch) {
+                                    val targetName = "baru_${System.currentTimeMillis()}_${cleanName}"
+                                    val destFile = File(localFolder, targetName)
                                     NetworkRelay.downloadAudioFile(host, myId, remoteFile, destFile) { success ->
-                                        if (success) {
+                                        if (success && destFile.length() > 0L) {
                                             refreshVoicemailList()
                                             
                                             // Trigger NOTIFY OLED state for 4 seconds
@@ -141,10 +159,12 @@ class MainActivity : ComponentActivity() {
                                             Toast.makeText(this@MainActivity, "Pesan Voicemail Baru Masuk!", Toast.LENGTH_SHORT).show()
                                             MeowlCatWidgetProvider.updateAllWidgets(this@MainActivity, "NOTIFY", "NEW MESSAGE", unreadCount)
 
-                            mainHandler.postDelayed({
+                                            mainHandler.postDelayed({
                                                 visualState = AppVisualState.IDLE
                                                 MeowlCatWidgetProvider.updateAllWidgets(this@MainActivity, "IDLE", "ONLINE · READY", unreadCount)
                                             }, 4000)
+                                        } else if (destFile.exists()) {
+                                            destFile.delete()
                                         }
                                     }
                                 }
@@ -156,6 +176,17 @@ class MainActivity : ComponentActivity() {
                     NetworkRelay.checkConnectRequest(host, myId) { hasReq, fromId ->
                         if (hasReq && !fromId.isNullOrEmpty()) {
                             incomingConnectRequesterId = fromId
+                        }
+                    }
+
+                    // 4. Auto-Sync Partner's Timezone & City from VPS Server
+                    val targetId = prefsManager.targetId
+                    if (targetId.isNotEmpty()) {
+                        NetworkRelay.fetchPartnerInfo(host, targetId) { partnerTz, partnerCity ->
+                            if (!partnerTz.isNullOrEmpty() && !partnerCity.isNullOrEmpty()) {
+                                prefsManager.partnerTimezone = partnerTz
+                                prefsManager.partnerCity = partnerCity
+                            }
                         }
                     }
 
@@ -326,22 +357,16 @@ class MainActivity : ComponentActivity() {
 
     private fun updateAppIcon(themeName: String) {
         val pm = packageManager
-        val aliases = listOf(
-            "com.meowl.app.AliasPink",
-            "com.meowl.app.AliasBlue",
-            "com.meowl.app.AliasPurple",
-            "com.meowl.app.AliasYellow"
+        val aliases = mapOf(
+            "Blue" to "com.meowl.app.AliasBlue",
+            "Purple" to "com.meowl.app.AliasPurple",
+            "Yellow" to "com.meowl.app.AliasYellow"
         )
         
-        val targetAlias = when (themeName) {
-            "Blue" -> "com.meowl.app.AliasBlue"
-            "Purple" -> "com.meowl.app.AliasPurple"
-            "Yellow" -> "com.meowl.app.AliasYellow"
-            else -> "com.meowl.app.AliasPink"
-        }
+        val activeAlias = aliases[themeName]
 
-        aliases.forEach { alias ->
-            val state = if (alias == targetAlias) {
+        aliases.values.forEach { alias ->
+            val state = if (alias == activeAlias) {
                 PackageManager.COMPONENT_ENABLED_STATE_ENABLED
             } else {
                 PackageManager.COMPONENT_ENABLED_STATE_DISABLED
@@ -355,6 +380,24 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private fun formatVoicemailTitle(file: File): String {
+        return try {
+            val digits = Regex("(\\d{10,13})").find(file.name)?.value
+            if (digits != null) {
+                var ts = digits.toLong()
+                if (ts > 9999999999L) ts /= 1000L
+                val sdf = java.text.SimpleDateFormat("dd MMM · HH:mm", java.util.Locale.getDefault())
+                "Pesan Voice (" + sdf.format(java.util.Date(ts * 1000L)) + ")"
+            } else {
+                val sdf = java.text.SimpleDateFormat("dd MMM · HH:mm", java.util.Locale.getDefault())
+                "Pesan Voice (" + sdf.format(java.util.Date(file.lastModified())) + ")"
+            }
+        } catch (e: Exception) {
+            val sdf = java.text.SimpleDateFormat("dd MMM · HH:mm", java.util.Locale.getDefault())
+            "Pesan Voice (" + sdf.format(java.util.Date(file.lastModified())) + ")"
+        }
+    }
+
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun MeowlDigitalAppUI() {
@@ -363,6 +406,23 @@ class MainActivity : ComponentActivity() {
         var vpsHostText by remember { mutableStateOf(prefsManager.vpsServerHost) }
         var gainSlider by remember { mutableStateOf(prefsManager.speakerGain.toFloat()) }
         var themeColor by remember { mutableStateOf(prefsManager.casingTheme) }
+        var currentLangState by remember { mutableStateOf(prefsManager.appLanguage) }
+        var isRefreshingState by remember { mutableStateOf(false) }
+
+        var partnerCityText by remember { mutableStateOf(prefsManager.partnerCity) }
+        var partnerTzText by remember { mutableStateOf(prefsManager.partnerTimezone) }
+        var partnerLiveTime by remember { mutableStateOf("--:--") }
+
+        LaunchedEffect(Unit) {
+            while (isActive) {
+                partnerCityText = prefsManager.partnerCity
+                partnerTzText = prefsManager.partnerTimezone
+                val sdf = java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault())
+                sdf.timeZone = java.util.TimeZone.getTimeZone(partnerTzText)
+                partnerLiveTime = sdf.format(java.util.Date())
+                kotlinx.coroutines.delay(1000L)
+            }
+        }
 
         // Dynamic Color Tokens for Light Mode vs Dark Mode
         val appBgColor = if (isDarkModeState) Color(0xFF0D0F14) else Color(0xFFF3F4F6)
@@ -394,20 +454,82 @@ class MainActivity : ComponentActivity() {
 
         val infiniteTransition = rememberInfiniteTransition(label = "sim_anims")
 
-        val eyeHeight by infiniteTransition.animateFloat(
+        val leftEyeHeight by infiniteTransition.animateFloat(
             initialValue = 36f,
-            targetValue = 3f,
+            targetValue = 36f,
             animationSpec = infiniteRepeatable(
                 animation = keyframes {
-                    durationMillis = 4500
+                    durationMillis = 16000
                     36f at 0
-                    36f at 4000
-                    3f at 4200
                     36f at 4500
+                    4f at 4650   // Single blink
+                    36f at 4800
+                    36f at 8800  // Open gaze while right eye winks
+                    36f at 9450
+                    36f at 13500
+                    4f at 13700  // LEFT EYE WINK! (Left eye winks, right stays open)
+                    4f at 14000
+                    36f at 14150
+                    36f at 15000
+                    4f at 15200  // Double blink 1
+                    36f at 15350
+                    4f at 15550  // Double blink 2
+                    36f at 15700
+                    36f at 16000
                 },
                 repeatMode = RepeatMode.Restart
             ),
-            label = "eye_squint"
+            label = "left_eye_anim"
+        )
+
+        val rightEyeHeight by infiniteTransition.animateFloat(
+            initialValue = 36f,
+            targetValue = 36f,
+            animationSpec = infiniteRepeatable(
+                animation = keyframes {
+                    durationMillis = 16000
+                    36f at 0
+                    36f at 4500
+                    4f at 4650   // Single blink
+                    36f at 4800
+                    36f at 8800
+                    4f at 9000   // RIGHT EYE WINK! (Right eye winks, left stays open)
+                    4f at 9300
+                    36f at 9450
+                    36f at 13500 // Open gaze while left eye winks
+                    36f at 14150
+                    36f at 15000
+                    4f at 15200  // Double blink 1
+                    36f at 15350
+                    4f at 15550  // Double blink 2
+                    36f at 15700
+                    36f at 16000
+                },
+                repeatMode = RepeatMode.Restart
+            ),
+            label = "right_eye_anim"
+        )
+
+        val eyeGazeOffsetX by infiniteTransition.animateFloat(
+            initialValue = 0f,
+            targetValue = 0f,
+            animationSpec = infiniteRepeatable(
+                animation = keyframes {
+                    durationMillis = 16000
+                    0f at 0
+                    0f at 2000
+                    -5f at 2400   // Look Left!
+                    -5f at 4200
+                    0f at 4500    // Center
+                    0f at 6200
+                    5f at 6600    // Look Right!
+                    5f at 8400
+                    0f at 8700    // Center for Winks
+                    0f at 16000
+                },
+                repeatMode = RepeatMode.Restart
+            ),
+            label = "gaze_anim"
         )
 
         val viz1 by infiniteTransition.animateFloat(initialValue = 8f, targetValue = 24f, animationSpec = infiniteRepeatable(tween(350, easing = LinearEasing), RepeatMode.Reverse), label = "v1")
@@ -640,20 +762,45 @@ class MainActivity : ComponentActivity() {
                                     .border(2.dp, Color(0xFF1A1A1A), RoundedCornerShape(10.dp)),
                                 contentAlignment = Alignment.Center
                             ) {
+                                // Top Overlay Header: Partner City & Timezone Clock
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 6.dp, vertical = 3.dp)
+                                        .align(Alignment.TopCenter),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = partnerCityText.uppercase(java.util.Locale.getDefault()),
+                                        color = Color(0xFF00F5FF).copy(alpha = 0.75f),
+                                        fontSize = 7.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        letterSpacing = 0.5.sp
+                                    )
+                                    Text(
+                                        text = partnerLiveTime,
+                                        color = Color(0xFF00F5FF).copy(alpha = 0.75f),
+                                        fontSize = 7.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+
                                 when (visualState) {
                                     AppVisualState.IDLE -> {
                                         Row(
+                                            modifier = Modifier.offset(x = eyeGazeOffsetX.dp),
                                             horizontalArrangement = Arrangement.spacedBy(18.dp),
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
                                             Box(
                                                 modifier = Modifier
-                                                    .size(width = 20.dp, height = eyeHeight.dp)
+                                                    .size(width = 20.dp, height = leftEyeHeight.dp)
                                                     .background(Color(0xFF00F5FF), RoundedCornerShape(10.dp))
                                             )
                                             Box(
                                                 modifier = Modifier
-                                                    .size(width = 20.dp, height = eyeHeight.dp)
+                                                    .size(width = 20.dp, height = rightEyeHeight.dp)
                                                     .background(Color(0xFF00F5FF), RoundedCornerShape(10.dp))
                                             )
                                         }
@@ -938,85 +1085,134 @@ class MainActivity : ComponentActivity() {
                                 modifier = Modifier.size(14.dp)
                             )
                             Text(
-                                text = "PESAN MASUK (${voicemailFiles.size})",
+                                text = if (currentLangState == "EN") "INBOX (${voicemailFiles.size})" else "PESAN MASUK (${voicemailFiles.size})",
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = textMutedColor
                             )
                         }
-                        Text(
-                            text = "FAVORIT PERMANEN",
-                            fontSize = 9.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFFFF6EB4)
-                        )
+                        
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            if (isRefreshingState) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(14.dp),
+                                    color = Color(0xFF00F5FF),
+                                    strokeWidth = 2.dp
+                                )
+                            }
+                            TextButton(
+                                onClick = {
+                                    if (!isRefreshingState) {
+                                        isRefreshingState = true
+                                        refreshVoicemailList()
+                                        val host = prefsManager.vpsServerHost
+                                        val myId = prefsManager.myId
+                                        if (host.isNotEmpty() && myId.isNotEmpty()) {
+                                            NetworkRelay.checkIncomingFiles(host, myId) { remoteFiles ->
+                                                if (remoteFiles.isNotEmpty()) {
+                                                    val voicemailDir = File(filesDir, "voicemails")
+                                                    for (remoteFile in remoteFiles) {
+                                                        val cleanName = remoteFile.replace(Regex("^(baru_|kirim_|lama_|fav_)+"), "")
+                                                        val targetName = "baru_${System.currentTimeMillis()}_${cleanName}"
+                                                        val destFile = File(voicemailDir, targetName)
+                                                        if (!destFile.exists()) {
+                                                            NetworkRelay.downloadAudioFile(host, myId, remoteFile, destFile) { success ->
+                                                                if (success && destFile.length() > 0L) {
+                                                                    refreshVoicemailList()
+                                                                } else if (destFile.exists()) {
+                                                                    destFile.delete()
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                                mainHandler.postDelayed({ isRefreshingState = false }, 1200)
+                                            }
+                                        } else {
+                                            mainHandler.postDelayed({ isRefreshingState = false }, 800)
+                                        }
+                                    }
+                                },
+                                contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp)
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_refresh),
+                                        contentDescription = "Refresh",
+                                        tint = if (isRefreshingState) Color(0xFF00F5FF) else Color(0xFFFF6EB4),
+                                        modifier = Modifier.size(12.dp)
+                                    )
+                                    Text(
+                                        text = if (isRefreshingState) "Syncing..." else "Refresh",
+                                        fontSize = 9.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (isRefreshingState) Color(0xFF00F5FF) else Color(0xFFFF6EB4)
+                                    )
+                                }
+                            }
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    if (voicemailFiles.isEmpty()) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 24.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text("Belum ada pesan masuk", color = textMutedColor, fontSize = 11.sp)
-                        }
-                    } else {
-                        LazyColumn(
-                            verticalArrangement = Arrangement.spacedBy(6.dp),
-                            modifier = Modifier.fillMaxSize()
-                        ) {
-                            items(voicemailFiles) { file ->
-                                val isFav = file.name.startsWith("fav_")
-                                val isNew = file.name.startsWith("baru_")
-                                val isPlayingThis = (playingFilePath == file.absolutePath)
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        if (voicemailFiles.isEmpty()) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 24.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(if (currentLangState == "EN") "No Voicemail Messages" else "Belum Ada Pesan Masuk", color = textMutedColor, fontSize = 11.sp)
+                            }
+                        } else {
+                            LazyColumn(
+                                verticalArrangement = Arrangement.spacedBy(6.dp),
+                                modifier = Modifier.fillMaxWidth().heightIn(max = 240.dp)
+                            ) {
+                                items(voicemailFiles) { file ->
+                                    val isFav = file.name.startsWith("fav_")
+                                    val isNew = file.name.startsWith("baru_")
+                                    val isPlayingThis = (playingFilePath == file.absolutePath)
 
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clip(RoundedCornerShape(8.dp))
-                                        .background(
-                                            when {
-                                                isFav -> Color(0x33FF6EB4)
-                                                isNew -> Color(0x33FBBF24)
-                                                else -> if (isDarkModeState) Color(0x0FFFFFF) else Color(0xFFF3F4F6)
-                                            }
-                                        )
-                                        .padding(8.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Column(modifier = Modifier.weight(1f)) {
-                                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                                            val badgeText = when {
-                                                isFav -> "FAVORIT"
-                                                isNew -> "BARU"
-                                                else -> "DIBACA"
-                                            }
-                                            val badgeColor = when {
-                                                isFav -> Color(0xFFFF6EB4)
-                                                isNew -> Color(0xFFFBBF24)
-                                                else -> textMutedColor
-                                            }
-                                            Text(
-                                                text = badgeText,
-                                                color = badgeColor,
-                                                fontSize = 9.sp,
-                                                fontWeight = FontWeight.Bold
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clip(RoundedCornerShape(8.dp))
+                                            .background(
+                                                when {
+                                                    isFav -> Color(0x33FF6EB4)
+                                                    isNew -> Color(0x33FBBF24)
+                                                    else -> if (isDarkModeState) Color(0x0FFFFFF) else Color(0xFFF3F4F6)
+                                                }
                                             )
+                                            .padding(8.dp),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                                val badgeText = when {
+                                                    isFav -> "FAVORIT"
+                                                    isNew -> "BARU"
+                                                    else -> "DIBACA"
+                                                }
+                                                val badgeColor = when {
+                                                    isFav -> Color(0xFFFF6EB4)
+                                                    isNew -> Color(0xFFFBBF24)
+                                                    else -> textMutedColor
+                                                }
+                                                Text(
+                                                    text = badgeText,
+                                                    color = badgeColor,
+                                                    fontSize = 9.sp,
+                                                    fontWeight = FontWeight.Bold
+                                                )
 
-                                            val dateStr = try {
-                                                val tsStr = file.name.substringAfter("_").substringBefore(".")
-                                                val sdf = SimpleDateFormat("dd/MM HH:mm", Locale.getDefault())
-                                                sdf.format(Date(tsStr.toLong() * 1000))
-                                            } catch (e: Exception) {
-                                                file.name
+                                                val formattedTitle = formatVoicemailTitle(file)
+                                                Text(formattedTitle, color = textPrimaryColor, fontSize = 11.sp, fontWeight = FontWeight.Medium)
                                             }
-                                            Text(dateStr, color = textPrimaryColor, fontSize = 11.sp, fontWeight = FontWeight.Medium)
                                         }
-                                    }
 
                                     Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
                                         IconButton(
@@ -1060,12 +1256,13 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 }
+                }
 
                 // Settings Dialog
                 if (showSettingsDialog) {
                     AlertDialog(
                         onDismissRequest = { showSettingsDialog = false },
-                        title = { Text("Opsi Pengaturan Meowl", color = textPrimaryColor, fontWeight = FontWeight.Bold) },
+                        title = { Text(if (currentLangState == "EN") "Meowl App Settings" else "Opsi Pengaturan Meowl", color = textPrimaryColor, fontWeight = FontWeight.Bold) },
                         text = {
                             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                                 OutlinedTextField(
@@ -1122,7 +1319,7 @@ class MainActivity : ComponentActivity() {
                                     valueRange = 10f..100f
                                 )
                                 Column(modifier = Modifier.fillMaxWidth()) {
-                                    Text("Tema Casing:", color = textMutedColor, fontSize = 12.sp)
+                                    Text(if (currentLangState == "EN") "Casing Theme:" else "Tema Casing:", color = textMutedColor, fontSize = 12.sp)
                                     Spacer(modifier = Modifier.height(4.dp))
                                     Row(
                                         modifier = Modifier.fillMaxWidth(),
@@ -1133,6 +1330,61 @@ class MainActivity : ComponentActivity() {
                                                 selected = (themeColor == color),
                                                 onClick = { themeColor = color },
                                                 label = { Text(color, fontSize = 9.sp) }
+                                            )
+                                        }
+                                    }
+                                }
+
+                                Column(modifier = Modifier.fillMaxWidth()) {
+                                    Text(if (currentLangState == "EN") "App Language / Bahasa:" else "Bahasa Aplikasi / Language:", color = textMutedColor, fontSize = 12.sp)
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                    ) {
+                                        FilterChip(
+                                            selected = (currentLangState == "ID"),
+                                            onClick = { currentLangState = "ID" },
+                                            label = { Text("ID - Indonesia", fontSize = 10.sp) }
+                                        )
+                                        FilterChip(
+                                            selected = (currentLangState == "EN"),
+                                            onClick = { currentLangState = "EN" },
+                                            label = { Text("EN - English", fontSize = 10.sp) }
+                                        )
+                                    }
+                                }
+
+                                Column(modifier = Modifier.fillMaxWidth()) {
+                                    Text(if (currentLangState == "EN") "Partner City & Timezone:" else "Kota & Timezone Partner:", color = textMutedColor, fontSize = 12.sp)
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    OutlinedTextField(
+                                        value = partnerCityText,
+                                        onValueChange = { partnerCityText = it },
+                                        label = { Text(if (currentLangState == "EN") "Partner City Name" else "Nama Kota Partner") },
+                                        placeholder = { Text("TOKYO / JAKARTA") },
+                                        modifier = Modifier.fillMaxWidth()
+                                    )
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+                                        val tzPresets = listOf(
+                                            "JKT" to "Asia/Jakarta",
+                                            "TKY" to "Asia/Tokyo",
+                                            "LDN" to "Europe/London",
+                                            "NYC" to "America/New_York",
+                                            "SGP" to "Asia/Singapore"
+                                        )
+                                        tzPresets.forEach { (label, tz) ->
+                                            FilterChip(
+                                                selected = (partnerTzText == tz),
+                                                onClick = {
+                                                    partnerTzText = tz
+                                                    partnerCityText = label
+                                                },
+                                                label = { Text(label, fontSize = 9.sp) }
                                             )
                                         }
                                     }
@@ -1154,6 +1406,9 @@ class MainActivity : ComponentActivity() {
                                                 prefsManager.vpsServerHost = host
                                                 prefsManager.speakerGain = gainSlider.toInt()
                                                 prefsManager.casingTheme = themeColor
+                                                prefsManager.appLanguage = currentLangState
+                                                prefsManager.partnerCity = partnerCityText.trim()
+                                                prefsManager.partnerTimezone = partnerTzText.trim()
                                                 showSettingsDialog = false
 
                                                 updateAppIcon(themeColor)
@@ -1161,14 +1416,16 @@ class MainActivity : ComponentActivity() {
                                                 if (cleanTargetId.isNotEmpty()) {
                                                     NetworkRelay.sendConnectRequest(host, cleanMyId, cleanTargetId) { reqSent ->
                                                         if (reqSent) {
-                                                            Toast.makeText(this@MainActivity, "Permintaan koneksi dikirim ke $cleanTargetId", Toast.LENGTH_SHORT).show()
+                                                            val msg = if (currentLangState == "EN") "Connection request sent to $cleanTargetId" else "Permintaan koneksi dikirim ke $cleanTargetId"
+                                                            Toast.makeText(this@MainActivity, msg, Toast.LENGTH_SHORT).show()
                                                         }
                                                     }
                                                 }
 
                                                 refreshVoicemailList()
                                                 MeowlCatWidgetProvider.updateAllWidgets(this@MainActivity, "IDLE", "ONLINE · READY", unreadCount)
-                                                Toast.makeText(this@MainActivity, "Pengaturan & ID tersimpan!", Toast.LENGTH_SHORT).show()
+                                                val saveMsg = if (currentLangState == "EN") "Settings & ID Saved!" else "Pengaturan & ID tersimpan!"
+                                                Toast.makeText(this@MainActivity, saveMsg, Toast.LENGTH_SHORT).show()
                                             } else {
                                                 Toast.makeText(this@MainActivity, errorMsg ?: "ID sudah digunakan!", Toast.LENGTH_LONG).show()
                                             }
@@ -1179,22 +1436,24 @@ class MainActivity : ComponentActivity() {
                                         prefsManager.vpsServerHost = host
                                         prefsManager.speakerGain = gainSlider.toInt()
                                         prefsManager.casingTheme = themeColor
+                                        prefsManager.appLanguage = currentLangState
                                         showSettingsDialog = false
 
                                         updateAppIcon(themeColor)
 
                                         refreshVoicemailList()
                                         MeowlCatWidgetProvider.updateAllWidgets(this@MainActivity, "IDLE", "ONLINE · READY", unreadCount)
-                                        Toast.makeText(this@MainActivity, "Pengaturan tersimpan", Toast.LENGTH_SHORT).show()
+                                        val saveMsg = if (currentLangState == "EN") "Settings Saved!" else "Pengaturan tersimpan!"
+                                        Toast.makeText(this@MainActivity, saveMsg, Toast.LENGTH_SHORT).show()
                                     }
                                 }
                             ) {
-                                Text("Simpan")
+                                Text(if (currentLangState == "EN") "Save" else "Simpan")
                             }
                         },
                         dismissButton = {
                             TextButton(onClick = { showSettingsDialog = false }) {
-                                Text("Batal", color = textMutedColor)
+                                Text(if (currentLangState == "EN") "Cancel" else "Batal", color = textMutedColor)
                             }
                         },
                         containerColor = panelBgColor
@@ -1206,7 +1465,7 @@ class MainActivity : ComponentActivity() {
                     val requesterId = incomingConnectRequesterId!!
                     AlertDialog(
                         onDismissRequest = { incomingConnectRequesterId = null },
-                        title = { Text("Permintaan Koneksi Pasangan", fontWeight = FontWeight.Bold) },
+                        title = { Text("Permintaan Koneksi Partner", fontWeight = FontWeight.Bold) },
                         text = { Text("Terima koneksi dari $requesterId?", fontSize = 14.sp) },
                         confirmButton = {
                             Button(

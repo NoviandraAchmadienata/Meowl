@@ -80,9 +80,9 @@ app.get('/status', (req, res) => {
   });
 });
 
-// HTTP POST Register/Claim ID (Prevents ID Duplication by other devices)
+// HTTP POST Register/Claim ID (with Timezone & City Auto-Sync)
 app.post('/register-id', (req, res) => {
-  const { id, deviceId } = req.body || {};
+  const { id, deviceId, timezone, city } = req.body || {};
 
   if (!id || !deviceId) {
     return res.status(400).json({ success: false, error: 'ID dan Device ID wajib diisi' });
@@ -92,25 +92,52 @@ app.post('/register-id', (req, res) => {
   const cleanDeviceId = deviceId.trim();
   const registry = loadRegisteredIds();
 
-  if (registry[cleanId]) {
-    const existing = registry[cleanId];
-    if (existing.deviceId === cleanDeviceId) {
-      console.log(`[POST /register-id] Re-registered ID "${cleanId}" for same device: ${cleanDeviceId}`);
-      return res.status(200).json({ success: true, message: 'ID milik Anda' });
-    } else {
-      console.log(`[POST /register-id] REJECTED duplicate claim for ID "${cleanId}" by device: ${cleanDeviceId}`);
-      return res.status(409).json({ success: false, error: `ID "${cleanId}" sudah digunakan oleh orang lain!` });
+  // Release any previous ID claimed by this exact deviceId
+  for (const [oldId, record] of Object.entries(registry)) {
+    if (record.deviceId === cleanDeviceId && oldId !== cleanId) {
+      console.log(`[POST /register-id] Releasing old ID "${oldId}" previously claimed by device: ${cleanDeviceId}`);
+      delete registry[oldId];
     }
+  }
+
+  if (registry[cleanId] && registry[cleanId].deviceId !== cleanDeviceId) {
+    console.log(`[POST /register-id] REJECTED duplicate claim for ID "${cleanId}" by device: ${cleanDeviceId}`);
+    return res.status(409).json({ success: false, error: `ID "${cleanId}" sedang digunakan oleh perangkat lain!` });
   }
 
   registry[cleanId] = {
     deviceId: cleanDeviceId,
-    registeredAt: new Date().toISOString()
+    timezone: timezone || 'Asia/Jakarta',
+    city: city || 'JAKARTA',
+    lastSeen: new Date().toISOString(),
+    registeredAt: registry[cleanId]?.registeredAt || new Date().toISOString()
   };
   saveRegisteredIds(registry);
 
-  console.log(`[POST /register-id] Successfully registered new ID "${cleanId}" for device: ${cleanDeviceId}`);
-  res.status(200).json({ success: true, message: 'ID berhasil didaftarkan' });
+  console.log(`[POST /register-id] Registered ID "${cleanId}" (${city}, ${timezone}) for device: ${cleanDeviceId}`);
+  res.status(200).json({
+    success: true,
+    message: 'ID berhasil didaftarkan',
+    timezone: registry[cleanId].timezone,
+    city: registry[cleanId].city
+  });
+});
+
+// HTTP GET Device Info (Automatic Timezone & City for Partner)
+app.get('/device-info/:id', (req, res) => {
+  const cleanId = req.params.id.trim();
+  const registry = loadRegisteredIds();
+
+  if (registry[cleanId]) {
+    res.status(200).json({
+      success: true,
+      id: cleanId,
+      timezone: registry[cleanId].timezone || 'Asia/Jakarta',
+      city: registry[cleanId].city || 'JAKARTA'
+    });
+  } else {
+    res.status(404).json({ success: false, error: 'Target device belum terdaftar' });
+  }
 });
 
 // Memory store for connection requests and confirmations

@@ -76,9 +76,8 @@ class WidgetAnimationService : Service() {
             canvas.drawRoundRect(RectF(88f, top, 110f, bottom), 10f, 10f, paint)
 
             for (widgetId in allWidgetIds) {
-                val views = RemoteViews(context.packageName, R.layout.widget_meowl_cat)
-                views.setImageViewBitmap(R.id.img_idle_eyes_bitmap, bitmap)
-                appWidgetManager.partiallyUpdateAppWidget(widgetId, views)
+                // ViewFlipper in widget_meowl_cat.xml natively manages multi-expression eye animations.
+                // Avoid partial bitmap updates to prevent ViewFlipper resets.
             }
         } catch (e: Exception) {
             e.printStackTrace()

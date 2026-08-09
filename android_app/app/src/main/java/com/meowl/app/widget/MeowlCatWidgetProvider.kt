@@ -34,6 +34,8 @@ class MeowlCatWidgetProvider : AppWidgetProvider() {
         const val ACTION_WIDGET_RECORD_TOGGLE = "com.meowl.app.ACTION_WIDGET_RECORD_TOGGLE"
         const val ACTION_WIDGET_RECORD_CANCEL = "com.meowl.app.ACTION_WIDGET_RECORD_CANCEL"
 
+        var currentWidgetState: String = "IDLE"
+            private set
         private var isWidgetRecording = false
         private var isWidgetPlaying = false
         private var widgetRecorder: AudioRecorder? = null
@@ -42,6 +44,7 @@ class MeowlCatWidgetProvider : AppWidgetProvider() {
 
         fun updateAllWidgets(context: Context, state: String = "IDLE", statusMsg: String = "ONLINE · READY", unreadCount: Int = 0) {
             try {
+                currentWidgetState = state
                 val appWidgetManager = AppWidgetManager.getInstance(context)
                 val thisWidget = ComponentName(context, MeowlCatWidgetProvider::class.java)
                 val allWidgetIds = appWidgetManager.getAppWidgetIds(thisWidget)
@@ -77,8 +80,18 @@ class MeowlCatWidgetProvider : AppWidgetProvider() {
                 views.setImageViewResource(R.id.img_widget_ear_left, earLeftRes)
                 views.setImageViewResource(R.id.img_widget_ear_right, earRightRes)
 
-                // 2. Synchronize Title & Unread Badge
-                views.setTextViewText(R.id.txt_widget_title, prefs.myId.uppercase(Locale.getDefault()))
+                // 2. Synchronize Title (with Partner City & Time) & Unread Badge
+                val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
+                sdf.timeZone = TimeZone.getTimeZone(prefs.partnerTimezone)
+                val partnerTimeStr = sdf.format(Date())
+
+                val widgetTitleText = if (prefs.partnerCity.isNotEmpty()) {
+                    "${prefs.myId.uppercase(Locale.getDefault())} • ${prefs.partnerCity.uppercase(Locale.getDefault())} $partnerTimeStr"
+                } else {
+                    prefs.myId.uppercase(Locale.getDefault())
+                }
+
+                views.setTextViewText(R.id.txt_widget_title, widgetTitleText)
                 views.setTextViewText(
                     R.id.txt_unread_badge,
                     if (unreadCount > 0) "$unreadCount UNREAD" else "0 UNREAD"
@@ -108,12 +121,14 @@ class MeowlCatWidgetProvider : AppWidgetProvider() {
                 // Live Chronometer Timers for Recording & Playing
                 if (isRec) {
                     views.setChronometer(R.id.chrono_widget_rec, android.os.SystemClock.elapsedRealtime(), "%s", true)
+                    views.showNext(R.id.flipper_rec_bars)
                 } else {
                     views.setChronometer(R.id.chrono_widget_rec, android.os.SystemClock.elapsedRealtime(), "%s", false)
                 }
 
                 if (state == "PLAYING") {
                     views.setChronometer(R.id.chrono_widget_play, android.os.SystemClock.elapsedRealtime(), "%s", true)
+                    views.showNext(R.id.flipper_viz)
                 } else {
                     views.setChronometer(R.id.chrono_widget_play, android.os.SystemClock.elapsedRealtime(), "%s", false)
                 }
@@ -184,28 +199,46 @@ class MeowlCatWidgetProvider : AppWidgetProvider() {
         private fun playWidgetQueue(context: Context, files: List<File>, index: Int) {
             if (index >= files.size || !isWidgetPlaying) {
                 isWidgetPlaying = false
+                widgetPlayer?.stopAudio()
                 mainHandler.post {
-                    updateAllWidgets(context, "IDLE", "ONLINE · READY", 0)
+                    val remainingUnread = getAllUnreadVoicemails(context).size
+                    updateAllWidgets(context, "IDLE", "ONLINE · READY", remainingUnread)
                 }
                 return
             }
 
-            val file = files[index]
-            
-            // Mark as read immediately when played
-            val fileToPlay = if (file.name.startsWith("baru_")) {
-                val targetFile = File(file.parentFile, file.name.replace("baru_", "lama_"))
-                file.renameTo(targetFile)
-                targetFile
-            } else file
+            val rawFile = files[index]
+            if (!rawFile.exists() || rawFile.length() <= 0L) {
+                rawFile.delete() // Clean up empty/corrupt files
+                playWidgetQueue(context, files, index + 1)
+                return
+            }
+
+            // Mark as read cleanly (replace initial baru_ with lama_)
+            val cleanName = rawFile.name.replace(Regex("^baru_"), "lama_")
+            val fileToPlay = if (rawFile.name != cleanName) {
+                val tf = File(rawFile.parentFile, cleanName)
+                rawFile.renameTo(tf)
+                tf
+            } else rawFile
+
+            if (widgetPlayer == null) widgetPlayer = AudioPlayer(context)
 
             widgetPlayer?.playAudioFile(fileToPlay) {
-                playWidgetQueue(context, files, index + 1)
+                mainHandler.post {
+                    playWidgetQueue(context, files, index + 1)
+                }
             }
         }
     }
 
+    override fun onEnabled(context: Context) {
+        super.onEnabled(context)
+        com.meowl.app.network.MeowlRelayService.startService(context)
+    }
+
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
+        com.meowl.app.network.MeowlRelayService.startService(context)
         for (appWidgetId in appWidgetIds) {
             updateAppWidget(context, appWidgetManager, appWidgetId, "IDLE", "ONLINE · READY", 0)
         }
@@ -213,6 +246,7 @@ class MeowlCatWidgetProvider : AppWidgetProvider() {
 
     override fun onReceive(context: Context, intent: Intent) {
         super.onReceive(context, intent)
+        com.meowl.app.network.MeowlRelayService.startService(context)
         val prefs = PreferencesManager(context)
 
         when (intent.action) {

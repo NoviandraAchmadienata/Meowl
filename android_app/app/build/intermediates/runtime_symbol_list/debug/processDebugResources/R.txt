@@ -96,6 +96,7 @@ int drawable ic_moon 0x7f050028
 int drawable ic_pause 0x7f050029
 int drawable ic_paw 0x7f05002a
 int drawable ic_play 0x7f05002b
+int drawable ic_refresh 0x7f05003e
 int drawable ic_settings 0x7f05002c
 int drawable ic_star 0x7f05002d
 int drawable ic_stop 0x7f05002e
@@ -178,7 +179,6 @@ int id hide_ime_id 0x7f06003c
 int id hide_in_inspector_tag 0x7f06003d
 int id icon 0x7f06003e
 int id icon_group 0x7f06003f
-int id img_idle_eyes_bitmap 0x7f060040
 int id img_ping_heart 0x7f060041
 int id img_widget_ear_left 0x7f060042
 int id img_widget_ear_right 0x7f060043

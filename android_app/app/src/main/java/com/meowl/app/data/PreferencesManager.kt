@@ -46,6 +46,18 @@ class PreferencesManager(context: Context) {
         get() = prefs.getBoolean("ephemeral_enabled", true)
         set(value) = prefs.edit().putBoolean("ephemeral_enabled", value).apply()
 
+    var appLanguage: String
+        get() = prefs.getString("app_language", "ID") ?: "ID"
+        set(value) = prefs.edit().putString("app_language", value).apply()
+
+    var partnerCity: String
+        get() = prefs.getString("partner_city", "TOKYO") ?: "TOKYO"
+        set(value) = prefs.edit().putString("partner_city", value).apply()
+
+    var partnerTimezone: String
+        get() = prefs.getString("partner_timezone", "Asia/Tokyo") ?: "Asia/Tokyo"
+        set(value) = prefs.edit().putString("partner_timezone", value).apply()
+
     // Persistent Unique Device UUID for ID Ownership Registration
     val deviceId: String
         get() {

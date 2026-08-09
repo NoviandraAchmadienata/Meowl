@@ -43,6 +43,7 @@ int drawable ic_moon 0x0
 int drawable ic_pause 0x0
 int drawable ic_paw 0x0
 int drawable ic_play 0x0
+int drawable ic_refresh 0x0
 int drawable ic_settings 0x0
 int drawable ic_star 0x0
 int drawable ic_stop 0x0
@@ -61,7 +62,6 @@ int id chrono_widget_rec 0x0
 int id flipper_idle_eyes 0x0
 int id flipper_rec_bars 0x0
 int id flipper_viz 0x0
-int id img_idle_eyes_bitmap 0x0
 int id img_ping_heart 0x0
 int id img_widget_ear_left 0x0
 int id img_widget_ear_right 0x0

@@ -28,10 +28,26 @@ object NetworkRelay {
         return h
     }
 
+    private fun getAutoLocalCity(): String {
+        val tzId = java.util.TimeZone.getDefault().id
+        val parts = tzId.split("/")
+        if (parts.size > 1) {
+            return parts.last().replace("_", " ").uppercase(java.util.Locale.getDefault())
+        }
+        return tzId.uppercase(java.util.Locale.getDefault())
+    }
+
     /**
-     * Register/Claim ID on VPS server with Device UUID to prevent ID duplication
+     * Register/Claim ID on VPS server with Device UUID and local Timezone & City
      */
-    fun registerId(vpsHost: String, myId: String, deviceId: String, onResult: (Boolean, String?) -> Unit) {
+    fun registerId(
+        vpsHost: String,
+        myId: String,
+        deviceId: String,
+        timezone: String = java.util.TimeZone.getDefault().id,
+        city: String = getAutoLocalCity(),
+        onResult: (Boolean, String?) -> Unit
+    ) {
         Thread {
             try {
                 val urlStr = "${normalizeHost(vpsHost)}/register-id"
@@ -46,6 +62,8 @@ object NetworkRelay {
                 val payload = JSONObject().apply {
                     put("id", myId)
                     put("deviceId", deviceId)
+                    put("timezone", timezone)
+                    put("city", city)
                 }.toString()
 
                 conn.outputStream.use { it.write(payload.toByteArray(Charsets.UTF_8)) }
@@ -62,6 +80,36 @@ object NetworkRelay {
             } catch (e: Exception) {
                 e.printStackTrace()
                 mainHandler.post { onResult(false, "Gagal terhubung ke server VPS") }
+            }
+        }.start()
+    }
+
+    /**
+     * Fetch Partner's automatically detected Timezone & City from VPS
+     */
+    fun fetchPartnerInfo(vpsHost: String, partnerId: String, onResult: (String?, String?) -> Unit) {
+        Thread {
+            try {
+                val urlStr = "${normalizeHost(vpsHost)}/device-info/$partnerId"
+                val url = URL(urlStr)
+                val conn = (url.openConnection() as HttpURLConnection).apply {
+                    requestMethod = "GET"
+                    connectTimeout = 4000
+                    readTimeout = 4000
+                }
+                if (conn.responseCode == 200) {
+                    val responseText = conn.inputStream.bufferedReader().use { it.readText() }
+                    conn.disconnect()
+                    val json = JSONObject(responseText)
+                    val tz = json.optString("timezone", null)
+                    val city = json.optString("city", null)
+                    mainHandler.post { onResult(tz, city) }
+                } else {
+                    conn.disconnect()
+                    mainHandler.post { onResult(null, null) }
+                }
+            } catch (e: Exception) {
+                mainHandler.post { onResult(null, null) }
             }
         }.start()
     }

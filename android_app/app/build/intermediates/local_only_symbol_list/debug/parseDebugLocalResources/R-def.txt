@@ -45,6 +45,7 @@ drawable ic_moon
 drawable ic_pause
 drawable ic_paw
 drawable ic_play
+drawable ic_refresh
 drawable ic_settings
 drawable ic_star
 drawable ic_stop
@@ -63,7 +64,6 @@ id chrono_widget_rec
 id flipper_idle_eyes
 id flipper_rec_bars
 id flipper_viz
-id img_idle_eyes_bitmap
 id img_ping_heart
 id img_widget_ear_left
 id img_widget_ear_right
