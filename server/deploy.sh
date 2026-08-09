@@ -1,10 +1,12 @@
 #!/bin/bash
 # ==============================================================================
-# 🐱 MEOWL VPS UNIVERSAL AUTOMATED DEPLOYMENT SCRIPT
-# Supports: AlmaLinux / Rocky Linux / CentOS / RHEL / Fedora AND Ubuntu / Debian
+# 🐱 MEOWL VPS BULLETPROOF UNIVERSAL DEPLOYMENT SCRIPT
+# Supports: All Linux Distros, Root & Non-Root, cPanel/CloudLinux & Custom VPS
 # ==============================================================================
 
 set -e
+
+echo "🐱 Starting Meowl VPS Setup..."
 
 # Detect if sudo is needed or available
 if [ "$(id -u)" -eq 0 ]; then
@@ -15,113 +17,110 @@ else
     SUDO=""
 fi
 
-echo "🐱 Starting Meowl VPS Setup..."
-
-# Detect Package Manager (dnf vs yum vs apt)
-if command -v dnf >/dev/null 2>&1; then
+# 1. Detect Package Manager
+PKG_MANAGER=""
+if command -v dnf >/dev/null 2>&1 || [ -f /usr/bin/dnf ]; then
     PKG_MANAGER="dnf"
-elif command -v yum >/dev/null 2>&1; then
+elif command -v yum >/dev/null 2>&1 || [ -f /usr/bin/yum ]; then
     PKG_MANAGER="yum"
-elif command -v apt >/dev/null 2>&1; then
+elif command -v apt >/dev/null 2>&1 || [ -f /usr/bin/apt ] || [ -f /usr/bin/apt-get ]; then
     PKG_MANAGER="apt"
+elif command -v microdnf >/dev/null 2>&1; then
+    PKG_MANAGER="microdnf"
+elif command -v apk >/dev/null 2>&1; then
+    PKG_MANAGER="apk"
+elif command -v pacman >/dev/null 2>&1; then
+    PKG_MANAGER="pacman"
+elif command -v zypper >/dev/null 2>&1; then
+    PKG_MANAGER="zypper"
 else
-    echo "❌ Error: Could not detect package manager (apt, dnf, yum)."
-    exit 1
+    PKG_MANAGER="custom"
 fi
 
-echo "📌 Detected Package Manager: $PKG_MANAGER"
+echo "📌 System Environment: Package Manager = [$PKG_MANAGER]"
 
-if [ "$PKG_MANAGER" = "dnf" ] || [ "$PKG_MANAGER" = "yum" ]; then
-    # ─── RHEL / AlmaLinux / Rocky Linux / CentOS / Fedora ──────────────────────
-    echo "📦 Updating system & installing EPEL repository..."
-    $SUDO $PKG_MANAGER install -y epel-release curl git gnupg tar || true
+# 2. Install Node.js & npm if not present
+if ! command -v node >/dev/null 2>&1 || ! command -v npm >/dev/null 2>&1; then
+    echo "💚 Node.js not detected. Installing Node.js..."
+    case "$PKG_MANAGER" in
+        "dnf"|"yum")
+            $SUDO $PKG_MANAGER install -y epel-release curl git tar || true
+            $SUDO $PKG_MANAGER install -y nodejs npm || true
+            ;;
+        "apt")
+            $SUDO apt update -y || true
+            $SUDO apt install -y nodejs npm curl git || true
+            ;;
+        "apk")
+            $SUDO apk add --no-cache nodejs npm git curl
+            ;;
+        "pacman")
+            $SUDO pacman -Sy --noconfirm nodejs npm git curl
+            ;;
+        *)
+            echo "📥 Downloading portable Node.js binaries via NVM..."
+            curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash || true
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            nvm install 18 || nvm install node
+            nvm use 18 || nvm use node
+            ;;
+    esac
+else
+    echo "✅ Node.js $(node -v) & npm $(npm -v) detected!"
+fi
 
-    echo "💚 Installing Node.js & npm..."
-    if command -v dnf >/dev/null 2>&1; then
-        $SUDO dnf module reset nodejs -y || true
-        $SUDO dnf module enable nodejs:18 -y || true
-    fi
-    $SUDO $PKG_MANAGER install -y nodejs npm mosquitto mosquitto-clients || true
-
-    # Fallback Node.js install via NodeSource if version is missing or too old
-    if ! command -v node >/dev/null 2>&1; then
-        curl -fsSL https://rpm.nodesource.com/setup_18.x | $SUDO bash -
-        $SUDO $PKG_MANAGER install -y nodejs
-    fi
-
+# 3. Install PM2 process manager
+if ! command -v pm2 >/dev/null 2>&1; then
     echo "⚡ Installing PM2 globally..."
-    $SUDO npm install -g pm2
-
-    echo "📡 Configuring Mosquitto MQTT Broker..."
-    $SUDO mkdir -p /etc/mosquitto/conf.d
-    cat << 'EOF' | $SUDO tee /etc/mosquitto/conf.d/meowl.conf
-listener 1883
-allow_anonymous true
-log_dest stdout
-log_type error
-log_type warning
-EOF
-
-    # Include conf.d in main mosquitto.conf if not present
-    if [ -f /etc/mosquitto/mosquitto.conf ] && ! grep -q "include_dir /etc/mosquitto/conf.d" /etc/mosquitto/mosquitto.conf; then
-        echo "include_dir /etc/mosquitto/conf.d" | $SUDO tee -a /etc/mosquitto/mosquitto.conf
-    fi
-
-    $SUDO systemctl restart mosquitto 2>/dev/null || $SUDO service mosquitto restart 2>/dev/null || true
-    $SUDO systemctl enable mosquitto 2>/dev/null || true
-
-    echo "🛡️ Configuring Firewall (firewalld)..."
-    if command -v firewall-cmd >/dev/null 2>&1; then
-        $SUDO systemctl start firewalld || true
-        $SUDO firewall-cmd --permanent --add-port=1883/tcp || true
-        $SUDO firewall-cmd --permanent --add-port=3000/tcp || true
-        $SUDO firewall-cmd --permanent --add-port=80/tcp || true
-        $SUDO firewall-cmd --reload || true
-    fi
-
-else
-    # ─── Ubuntu / Debian ──────────────────────────────────────────────────────
-    echo "📦 Updating system packages..."
-    $SUDO apt update -y && $SUDO apt upgrade -y
-    $SUDO apt install -y curl gnupg git ufw
-    curl -fsSL https://deb.nodesource.com/setup_18.x | $SUDO bash -
-    $SUDO apt install -y nodejs mosquitto mosquitto-clients
-    $SUDO npm install -g pm2
-
-    echo "📡 Configuring Mosquitto MQTT Broker..."
-    cat << 'EOF' | $SUDO tee /etc/mosquitto/conf.d/meowl.conf
-listener 1883
-allow_anonymous true
-log_dest stdout
-log_type error
-log_type warning
-EOF
-
-    $SUDO systemctl restart mosquitto 2>/dev/null || $SUDO service mosquitto restart 2>/dev/null || true
-    $SUDO systemctl enable mosquitto 2>/dev/null || true
-
-    echo "🛡️ Configuring Firewall (UFW)..."
-    if command -v ufw >/dev/null 2>&1; then
-        $SUDO ufw allow 22/tcp || true
-        $SUDO ufw allow 80/tcp || true
-        $SUDO ufw allow 1883/tcp || true
-        $SUDO ufw allow 3000/tcp || true
-        echo "y" | $SUDO ufw enable || true
-    fi
+    npm install -g pm2 || $SUDO npm install -g pm2 || npm install pm2
 fi
 
-# ─── Common Step: Install Node.js Server Dependencies & Start PM2 ────────────
+# 4. Install Mosquitto MQTT Broker (if package manager available & root)
+if ! command -v mosquitto >/dev/null 2>&1; then
+    echo "📡 Installing Mosquitto MQTT Broker..."
+    case "$PKG_MANAGER" in
+        "dnf"|"yum")
+            $SUDO $PKG_MANAGER install -y mosquitto || true
+            ;;
+        "apt")
+            $SUDO apt install -y mosquitto || true
+            ;;
+        "apk")
+            $SUDO apk add --no-cache mosquitto || true
+            ;;
+    esac
+fi
+
+# 5. Configure Mosquitto if installed
+if [ -d /etc/mosquitto ]; then
+    $SUDO mkdir -p /etc/mosquitto/conf.d
+    cat << 'EOF' | $SUDO tee /etc/mosquitto/conf.d/meowl.conf 2>/dev/null || true
+listener 1883
+allow_anonymous true
+log_dest stdout
+log_type error
+log_type warning
+EOF
+    $SUDO systemctl restart mosquitto 2>/dev/null || $SUDO service mosquitto restart 2>/dev/null || true
+fi
+
+# 6. Install Server Node.js Dependencies
 echo "🚀 Installing Meowl Node.js dependencies..."
 npm install
 
-echo "⚡ Starting Meowl Backend Server via PM2..."
-pm2 stop meowl-vps 2>/dev/null || true
-pm2 start server.js --name "meowl-vps"
-pm2 save
-pm2 startup 2>/dev/null || true
+# 7. Start Meowl Backend Server via PM2 or Node background process
+echo "⚡ Starting Meowl Backend Server..."
+if command -v pm2 >/dev/null 2>&1; then
+    pm2 stop meowl-vps 2>/dev/null || true
+    pm2 start server.js --name "meowl-vps"
+    pm2 save 2>/dev/null || true
+else
+    npx pm2 stop meowl-vps 2>/dev/null || true
+    npx pm2 start server.js --name "meowl-vps" || nohup node server.js > meowl.log 2>&1 &
+fi
 
 echo "=============================================================================="
 echo "✅ MEOWL VPS SETUP COMPLETE!"
-echo "📡 MQTT Broker Running on:   mqtt://YOUR_SERVER_IP:1883"
-echo "🌐 REST API Server Running on: http://YOUR_SERVER_IP:3000/status"
+echo "📡 REST API Server Running on: http://YOUR_SERVER_IP:3000/status"
 echo "=============================================================================="
