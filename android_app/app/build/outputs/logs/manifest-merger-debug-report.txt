@@ -1,9 +1,9 @@
 -- Merging decision tree log ---
 manifest
-ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:2:1-100:12
-INJECTED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:2:1-100:12
-INJECTED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:2:1-100:12
-INJECTED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:2:1-100:12
+ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:2:1-112:12
+INJECTED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:2:1-112:12
+INJECTED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:2:1-112:12
+INJECTED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:2:1-112:12
 MERGED from [androidx.compose.material3:material3:1.1.1] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\f71ebd9039a1d5ad9b8effacb3bfb9ed\transformed\material3-1.1.1\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.compose.material:material-ripple-android:1.5.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\7d04717a8492ffec107134623acfaa47\transformed\material-ripple-release\AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.compose.material:material-icons-core-android:1.5.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\d34439aa95f342345d129ff724af4471\transformed\material-icons-core-release\AndroidManifest.xml:2:1-7:12
@@ -81,8 +81,8 @@ ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\Andro
 	android:name
 		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:10:22-74
 application
-ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:12:5-98:19
-INJECTED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:12:5-98:19
+ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:12:5-110:19
+INJECTED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:12:5-110:19
 MERGED from [androidx.compose.ui:ui-test-manifest:1.5.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\fc06cca361e5ff079e42311b41d9b805\transformed\ui-test-manifest-1.5.0\AndroidManifest.xml:22:5-26:19
 MERGED from [androidx.compose.ui:ui-test-manifest:1.5.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\fc06cca361e5ff079e42311b41d9b805\transformed\ui-test-manifest-1.5.0\AndroidManifest.xml:22:5-26:19
 MERGED from [androidx.compose.ui:ui-tooling-android:1.5.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\163846f739548d3383d3431664ba803e\transformed\ui-tooling-release\AndroidManifest.xml:22:5-26:19
@@ -124,109 +124,127 @@ MERGED from [androidx.startup:startup-runtime:1.1.1] C:\Users\Lenovo\.gradle\cac
 	android:usesCleartextTraffic
 		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:21:9-44
 activity#com.meowl.app.MainActivity
-ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:25:9-36:20
+ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:25:9-30:20
 	android:label
-		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:30:13-45
+		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:28:13-45
 	android:exported
 		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:27:13-36
-	android:roundIcon
-		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:29:13-58
-	android:icon
-		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:28:13-47
 	android:theme
-		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:31:13-50
+		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:29:13-50
 	android:name
 		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:26:13-41
-intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
-ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:32:13-35:29
-action#android.intent.action.MAIN
-ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:33:17-69
-	android:name
-		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:33:25-66
-category#android.intent.category.LAUNCHER
-ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:34:17-77
-	android:name
-		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:34:27-74
-activity-alias#com.meowl.app.MainActivityBlue
-ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:38:9-49:26
+activity-alias#com.meowl.app.AliasPink
+ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:33:9-45:26
 	android:enabled
-		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:44:13-36
-	android:exported
-		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:43:13-36
-	android:targetActivity
-		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:40:13-51
-	android:roundIcon
-		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:42:13-63
-	android:icon
-		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:41:13-52
-	android:name
-		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:39:13-45
-activity-alias#com.meowl.app.MainActivityPurple
-ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:51:9-62:26
-	android:enabled
-		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:57:13-36
-	android:exported
-		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:56:13-36
-	android:targetActivity
-		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:53:13-51
-	android:roundIcon
-		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:55:13-65
-	android:icon
-		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:54:13-54
-	android:name
-		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:52:13-47
-activity-alias#com.meowl.app.MainActivityYellow
-ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:64:9-75:26
-	android:enabled
-		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:70:13-36
-	android:exported
-		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:69:13-36
-	android:targetActivity
-		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:66:13-51
-	android:roundIcon
-		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:68:13-65
-	android:icon
-		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:67:13-54
-	android:name
-		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:65:13-47
-receiver#com.meowl.app.widget.MeowlCatWidgetProvider
-ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:78:9-91:20
+		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:40:13-35
 	android:label
-		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:81:13-50
+		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:38:13-45
 	android:exported
-		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:80:13-36
+		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:39:13-36
+	android:targetActivity
+		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:35:13-51
+	android:roundIcon
+		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:37:13-58
+	android:icon
+		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:36:13-47
 	android:name
-		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:79:13-58
+		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:34:13-38
+intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
+ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:41:13-44:29
+action#android.intent.action.MAIN
+ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:42:17-69
+	android:name
+		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:42:25-66
+category#android.intent.category.LAUNCHER
+ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:43:17-77
+	android:name
+		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:43:27-74
+activity-alias#com.meowl.app.AliasBlue
+ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:47:9-59:26
+	android:enabled
+		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:54:13-36
+	android:label
+		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:52:13-45
+	android:exported
+		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:53:13-36
+	android:targetActivity
+		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:49:13-51
+	android:roundIcon
+		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:51:13-63
+	android:icon
+		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:50:13-52
+	android:name
+		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:48:13-38
+activity-alias#com.meowl.app.AliasPurple
+ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:61:9-73:26
+	android:enabled
+		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:68:13-36
+	android:label
+		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:66:13-45
+	android:exported
+		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:67:13-36
+	android:targetActivity
+		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:63:13-51
+	android:roundIcon
+		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:65:13-65
+	android:icon
+		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:64:13-54
+	android:name
+		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:62:13-40
+activity-alias#com.meowl.app.AliasYellow
+ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:75:9-87:26
+	android:enabled
+		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:82:13-36
+	android:label
+		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:80:13-45
+	android:exported
+		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:81:13-36
+	android:targetActivity
+		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:77:13-51
+	android:roundIcon
+		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:79:13-65
+	android:icon
+		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:78:13-54
+	android:name
+		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:76:13-40
+receiver#com.meowl.app.widget.MeowlCatWidgetProvider
+ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:90:9-103:20
+	android:label
+		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:93:13-50
+	android:exported
+		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:92:13-36
+	android:name
+		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:91:13-58
 intent-filter#action:name:android.appwidget.action.APPWIDGET_UPDATE+action:name:com.meowl.app.ACTION_WIDGET_RECORD_TOGGLE+action:name:com.meowl.app.ACTION_WIDGET_SEND_PING+action:name:com.meowl.app.ACTION_WIDGET_TAP_PLAY
-ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:82:13-87:29
+ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:94:13-99:29
 action#android.appwidget.action.APPWIDGET_UPDATE
-ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:83:17-84
+ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:95:17-84
 	android:name
-		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:83:25-81
+		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:95:25-81
 action#com.meowl.app.ACTION_WIDGET_TAP_PLAY
-ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:84:17-79
+ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:96:17-79
 	android:name
-		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:84:25-76
+		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:96:25-76
 action#com.meowl.app.ACTION_WIDGET_SEND_PING
-ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:85:17-80
+ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:97:17-80
 	android:name
-		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:85:25-77
+		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:97:25-77
 action#com.meowl.app.ACTION_WIDGET_RECORD_TOGGLE
-ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:86:17-84
+ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:98:17-84
 	android:name
-		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:86:25-81
+		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:98:25-81
 meta-data#android.appwidget.provider
-ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:88:13-90:61
+ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:100:13-102:61
 	android:resource
-		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:90:17-58
+		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:102:17-58
 	android:name
-		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:89:17-58
+		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:101:17-58
 service#com.meowl.app.widget.WidgetAnimationService
-ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:94:9-96:40
+ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:106:9-108:40
 	android:exported
-		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:96:13-37
+		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:108:13-37
 	android:name
-		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:95:13-58
+		ADDED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:107:13-58
 uses-sdk
 INJECTED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml

@@ -67,6 +67,131 @@ object NetworkRelay {
     }
 
     /**
+     * Send Connection Request to targetId
+     */
+    fun sendConnectRequest(vpsHost: String, myId: String, targetId: String, onResult: (Boolean) -> Unit) {
+        Thread {
+            try {
+                val urlStr = "${normalizeHost(vpsHost)}/connect-request"
+                val url = URL(urlStr)
+                val conn = (url.openConnection() as HttpURLConnection).apply {
+                    requestMethod = "POST"
+                    connectTimeout = 5000
+                    readTimeout = 5000
+                    doOutput = true
+                    setRequestProperty("Content-Type", "application/json")
+                }
+                val payload = JSONObject().apply {
+                    put("fromId", myId)
+                    put("targetId", targetId)
+                }.toString()
+
+                conn.outputStream.use { it.write(payload.toByteArray(Charsets.UTF_8)) }
+                val code = conn.responseCode
+                conn.disconnect()
+                mainHandler.post { onResult(code == 200) }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                mainHandler.post { onResult(false) }
+            }
+        }.start()
+    }
+
+    /**
+     * Check if there is an incoming connection request for myId
+     */
+    fun checkConnectRequest(vpsHost: String, myId: String, onResult: (Boolean, String?) -> Unit) {
+        Thread {
+            try {
+                val urlStr = "${normalizeHost(vpsHost)}/connect-request/$myId"
+                val url = URL(urlStr)
+                val conn = (url.openConnection() as HttpURLConnection).apply {
+                    requestMethod = "GET"
+                    connectTimeout = 4000
+                    readTimeout = 4000
+                }
+                val code = conn.responseCode
+                if (code == 200) {
+                    val responseText = conn.inputStream.bufferedReader().use { it.readText() }
+                    conn.disconnect()
+                    val json = JSONObject(responseText)
+                    val hasRequest = json.optBoolean("hasRequest", false)
+                    val fromId = json.optString("fromId", null)
+                    mainHandler.post { onResult(hasRequest, fromId) }
+                } else {
+                    conn.disconnect()
+                    mainHandler.post { onResult(false, null) }
+                }
+            } catch (e: Exception) {
+                mainHandler.post { onResult(false, null) }
+            }
+        }.start()
+    }
+
+    /**
+     * Respond (Accept or Reject) to an incoming connection request
+     */
+    fun respondConnectRequest(vpsHost: String, myId: String, requesterId: String, accepted: Boolean, onResult: (Boolean) -> Unit) {
+        Thread {
+            try {
+                val urlStr = "${normalizeHost(vpsHost)}/connect-response"
+                val url = URL(urlStr)
+                val conn = (url.openConnection() as HttpURLConnection).apply {
+                    requestMethod = "POST"
+                    connectTimeout = 5000
+                    readTimeout = 5000
+                    doOutput = true
+                    setRequestProperty("Content-Type", "application/json")
+                }
+                val payload = JSONObject().apply {
+                    put("myId", myId)
+                    put("requesterId", requesterId)
+                    put("accepted", accepted)
+                }.toString()
+
+                conn.outputStream.use { it.write(payload.toByteArray(Charsets.UTF_8)) }
+                val code = conn.responseCode
+                conn.disconnect()
+                mainHandler.post { onResult(code == 200) }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                mainHandler.post { onResult(false) }
+            }
+        }.start()
+    }
+
+    /**
+     * Check if requester's connect request was accepted by target
+     */
+    fun checkConnectStatus(vpsHost: String, myId: String, onResult: (Boolean, String?) -> Unit) {
+        Thread {
+            try {
+                val urlStr = "${normalizeHost(vpsHost)}/connect-status/$myId"
+                val url = URL(urlStr)
+                val conn = (url.openConnection() as HttpURLConnection).apply {
+                    requestMethod = "GET"
+                    connectTimeout = 4000
+                    readTimeout = 4000
+                }
+                val code = conn.responseCode
+                if (code == 200) {
+                    val responseText = conn.inputStream.bufferedReader().use { it.readText() }
+                    conn.disconnect()
+                    val json = JSONObject(responseText)
+                    val connected = json.optBoolean("connected", false)
+                    val partnerId = json.optString("partnerId", null)
+                    mainHandler.post { onResult(connected, partnerId) }
+                } else {
+                    conn.disconnect()
+                    mainHandler.post { onResult(false, null) }
+                }
+            } catch (e: Exception) {
+                mainHandler.post { onResult(false, null) }
+            }
+        }.start()
+    }
+
+    /**
      * Send Ping Hati Signal to Partner (target_id) via VPS REST API
      */
     fun sendPing(vpsHost: String, targetId: String, onResult: (Boolean) -> Unit) {

@@ -21,25 +21,35 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
 
-        <!-- Main Activity -->
+        <!-- Main Activity (Core Base Class - Never Disabled) -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.MeowlApp">
+        </activity>
+
+        <!-- Dynamic Icon Launcher Aliases -->
+        <activity-alias
+            android:name=".AliasPink"
+            android:targetActivity=".MainActivity"
             android:icon="@mipmap/ic_launcher"
             android:roundIcon="@mipmap/ic_launcher_round"
             android:label="@string/app_name"
-            android:theme="@style/Theme.MeowlApp">
+            android:exported="true"
+            android:enabled="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
+        </activity-alias>
 
         <activity-alias
-            android:name=".MainActivityBlue"
+            android:name=".AliasBlue"
             android:targetActivity=".MainActivity"
             android:icon="@mipmap/ic_launcher_blue"
             android:roundIcon="@mipmap/ic_launcher_blue_round"
+            android:label="@string/app_name"
             android:exported="true"
             android:enabled="false">
             <intent-filter>
@@ -49,10 +59,11 @@
         </activity-alias>
 
         <activity-alias
-            android:name=".MainActivityPurple"
+            android:name=".AliasPurple"
             android:targetActivity=".MainActivity"
             android:icon="@mipmap/ic_launcher_purple"
             android:roundIcon="@mipmap/ic_launcher_purple_round"
+            android:label="@string/app_name"
             android:exported="true"
             android:enabled="false">
             <intent-filter>
@@ -62,10 +73,11 @@
         </activity-alias>
 
         <activity-alias
-            android:name=".MainActivityYellow"
+            android:name=".AliasYellow"
             android:targetActivity=".MainActivity"
             android:icon="@mipmap/ic_launcher_yellow"
             android:roundIcon="@mipmap/ic_launcher_yellow_round"
+            android:label="@string/app_name"
             android:exported="true"
             android:enabled="false">
             <intent-filter>

@@ -113,12 +113,84 @@ app.post('/register-id', (req, res) => {
   res.status(200).json({ success: true, message: 'ID berhasil didaftarkan' });
 });
 
+// Memory store for connection requests and confirmations
+const connectRequests = {};     // connectRequests[target_id] = { fromId, timestamp }
+const connectConfirmations = {}; // connectConfirmations[requester_id] = { partnerId, timestamp }
+const pairedPartners = {};       // pairedPartners[id1] = id2
+
 // HTTP GET Check ID Availability
 app.get('/check-id/:id', (req, res) => {
   const cleanId = req.params.id.trim();
   const registry = loadRegisteredIds();
   const isTaken = !!registry[cleanId];
   res.status(200).json({ id: cleanId, registered: isTaken });
+});
+
+// HTTP POST Send Connection Request to targetId
+app.post('/connect-request', (req, res) => {
+  const { fromId, targetId } = req.body || {};
+  if (!fromId || !targetId) {
+    return res.status(400).json({ success: false, error: 'fromId dan targetId wajib diisi' });
+  }
+
+  const cleanFrom = fromId.trim();
+  const cleanTarget = targetId.trim();
+
+  connectRequests[cleanTarget] = {
+    fromId: cleanFrom,
+    timestamp: Math.floor(Date.now() / 1000)
+  };
+
+  console.log(`[POST /connect-request] Connection request from ${cleanFrom} to ${cleanTarget}`);
+  res.status(200).json({ success: true, message: 'Permintaan koneksi terkirim' });
+});
+
+// HTTP GET Check Incoming Connection Request for my_id
+app.get('/connect-request/:my_id', (req, res) => {
+  const myId = req.params.my_id.trim();
+  if (connectRequests[myId]) {
+    const reqData = connectRequests[myId];
+    return res.status(200).json({ hasRequest: true, fromId: reqData.fromId, timestamp: reqData.timestamp });
+  }
+  res.status(200).json({ hasRequest: false });
+});
+
+// HTTP POST Accept or Reject Connection Request
+app.post('/connect-response', (req, res) => {
+  const { myId, requesterId, accepted } = req.body || {};
+  if (!myId || !requesterId) {
+    return res.status(400).json({ success: false, error: 'myId dan requesterId wajib diisi' });
+  }
+
+  const cleanMyId = myId.trim();
+  const cleanRequester = requesterId.trim();
+
+  delete connectRequests[cleanMyId];
+
+  if (accepted) {
+    pairedPartners[cleanMyId] = cleanRequester;
+    pairedPartners[cleanRequester] = cleanMyId;
+    connectConfirmations[cleanRequester] = {
+      partnerId: cleanMyId,
+      timestamp: Math.floor(Date.now() / 1000)
+    };
+    console.log(`[POST /connect-response] ${cleanMyId} ACCEPTED connection from ${cleanRequester}`);
+    return res.status(200).json({ success: true, message: 'Koneksi diterima' });
+  } else {
+    console.log(`[POST /connect-response] ${cleanMyId} REJECTED connection from ${cleanRequester}`);
+    return res.status(200).json({ success: true, message: 'Koneksi ditolak' });
+  }
+});
+
+// HTTP GET Check Connection Status for requester
+app.get('/connect-status/:my_id', (req, res) => {
+  const myId = req.params.my_id.trim();
+  if (connectConfirmations[myId]) {
+    const conf = connectConfirmations[myId];
+    delete connectConfirmations[myId];
+    return res.status(200).json({ connected: true, partnerId: conf.partnerId });
+  }
+  res.status(200).json({ connected: false });
 });
 
 // HTTP POST Send Ping Signal to target_id

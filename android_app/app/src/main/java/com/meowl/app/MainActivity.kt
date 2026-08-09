@@ -140,13 +140,32 @@ class MainActivity : ComponentActivity() {
                                             Toast.makeText(this@MainActivity, "Pesan Voicemail Baru Masuk!", Toast.LENGTH_SHORT).show()
                                             MeowlCatWidgetProvider.updateAllWidgets(this@MainActivity, "NOTIFY", "NEW MESSAGE", unreadCount)
 
-                                            mainHandler.postDelayed({
+                            mainHandler.postDelayed({
                                                 visualState = AppVisualState.IDLE
                                                 MeowlCatWidgetProvider.updateAllWidgets(this@MainActivity, "IDLE", "ONLINE · READY", unreadCount)
                                             }, 4000)
                                         }
                                     }
                                 }
+                            }
+                        }
+                    }
+
+                    // 3. Check for incoming Partner Connection Requests
+                    NetworkRelay.checkConnectRequest(host, myId) { hasReq, fromId ->
+                        if (hasReq && !fromId.isNullOrEmpty()) {
+                            incomingConnectRequesterId = fromId
+                        }
+                    }
+
+                    // 4. Check if my connection request was accepted by partner
+                    NetworkRelay.checkConnectStatus(host, myId) { connected, partnerId ->
+                        if (connected && !partnerId.isNullOrEmpty()) {
+                            Toast.makeText(this@MainActivity, "Koneksi diterima oleh $partnerId!", Toast.LENGTH_LONG).show()
+                            if (prefsManager.targetId.isEmpty() || prefsManager.targetId != partnerId) {
+                                prefsManager.targetId = partnerId
+                                targetIdText = partnerId
+                                MeowlCatWidgetProvider.updateAllWidgets(this@MainActivity, "IDLE", "ONLINE · READY", unreadCount)
                             }
                         }
                     }
@@ -308,17 +327,17 @@ class MainActivity : ComponentActivity() {
     private fun updateAppIcon(themeName: String) {
         val pm = packageManager
         val aliases = listOf(
-            "com.meowl.app.MainActivity",
-            "com.meowl.app.MainActivityBlue",
-            "com.meowl.app.MainActivityPurple",
-            "com.meowl.app.MainActivityYellow"
+            "com.meowl.app.AliasPink",
+            "com.meowl.app.AliasBlue",
+            "com.meowl.app.AliasPurple",
+            "com.meowl.app.AliasYellow"
         )
         
         val targetAlias = when (themeName) {
-            "Blue" -> "com.meowl.app.MainActivityBlue"
-            "Purple" -> "com.meowl.app.MainActivityPurple"
-            "Yellow" -> "com.meowl.app.MainActivityYellow"
-            else -> "com.meowl.app.MainActivity"
+            "Blue" -> "com.meowl.app.AliasBlue"
+            "Purple" -> "com.meowl.app.AliasPurple"
+            "Yellow" -> "com.meowl.app.AliasYellow"
+            else -> "com.meowl.app.AliasPink"
         }
 
         aliases.forEach { alias ->
@@ -344,6 +363,9 @@ class MainActivity : ComponentActivity() {
         var vpsHostText by remember { mutableStateOf(prefsManager.vpsServerHost) }
         var gainSlider by remember { mutableStateOf(prefsManager.speakerGain.toFloat()) }
         var themeColor by remember { mutableStateOf(prefsManager.casingTheme) }
+
+        // Incoming Connection Request State
+        var incomingConnectRequesterId by remember { mutableStateOf<String?>(null) }
 
         // Dynamic Color Tokens for Light Mode vs Dark Mode
         val appBgColor = if (isDarkModeState) Color(0xFF0D0F14) else Color(0xFFF3F4F6)
@@ -1139,6 +1161,14 @@ class MainActivity : ComponentActivity() {
 
                                                 updateAppIcon(themeColor)
 
+                                                if (cleanTargetId.isNotEmpty()) {
+                                                    NetworkRelay.sendConnectRequest(host, cleanMyId, cleanTargetId) { reqSent ->
+                                                        if (reqSent) {
+                                                            Toast.makeText(this@MainActivity, "Permintaan koneksi dikirim ke $cleanTargetId", Toast.LENGTH_SHORT).show()
+                                                        }
+                                                    }
+                                                }
+
                                                 refreshVoicemailList()
                                                 MeowlCatWidgetProvider.updateAllWidgets(this@MainActivity, "IDLE", "ONLINE · READY", unreadCount)
                                                 Toast.makeText(this@MainActivity, "Pengaturan & ID tersimpan!", Toast.LENGTH_SHORT).show()
@@ -1168,6 +1198,46 @@ class MainActivity : ComponentActivity() {
                         dismissButton = {
                             TextButton(onClick = { showSettingsDialog = false }) {
                                 Text("Batal", color = textMutedColor)
+                            }
+                        },
+                        containerColor = panelBgColor
+                    )
+                }
+
+                // Incoming Connection Request Acceptance Dialog
+                if (incomingConnectRequesterId != null) {
+                    val requesterId = incomingConnectRequesterId!!
+                    AlertDialog(
+                        onDismissRequest = { incomingConnectRequesterId = null },
+                        title = { Text("Permintaan Koneksi Pasangan", fontWeight = FontWeight.Bold) },
+                        text = { Text("Terima koneksi dari $requesterId?", fontSize = 14.sp) },
+                        confirmButton = {
+                            Button(
+                                onClick = {
+                                    NetworkRelay.respondConnectRequest(prefsManager.vpsServerHost, prefsManager.myId, requesterId, accepted = true) { success ->
+                                        if (success) {
+                                            prefsManager.targetId = requesterId
+                                            targetIdText = requesterId
+                                            refreshVoicemailList()
+                                            MeowlCatWidgetProvider.updateAllWidgets(this@MainActivity, "IDLE", "ONLINE · READY", unreadCount)
+                                            Toast.makeText(this@MainActivity, "Berhasil terhubung dengan $requesterId!", Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
+                                    incomingConnectRequesterId = null
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4ADE80), contentColor = Color.Black)
+                            ) {
+                                Text("Terima")
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(
+                                onClick = {
+                                    NetworkRelay.respondConnectRequest(prefsManager.vpsServerHost, prefsManager.myId, requesterId, accepted = false) { }
+                                    incomingConnectRequesterId = null
+                                }
+                            ) {
+                                Text("Tolak", color = textMutedColor)
                             }
                         },
                         containerColor = panelBgColor
