@@ -1,0 +1,1636 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meowl — Simulator Sistem Voicemail LDR</title>
+    <meta name="description" content="Simulator interaktif Meowl, perangkat IoT voicemail asinkron berbasis ESP32 untuk pasangan LDR. Visualisasikan state machine OLED, OneButton logic (1x/2x/3x/Hold), MQTT ping, dan komunikasi dua arah.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        /* =============================================
+           DESIGN TOKENS & RESET
+           ============================================= */
+        :root {
+            --bg-primary:    #0d0f14;
+            --bg-secondary:  #141720;
+            --bg-card:       #1a1e2e;
+            --bg-glass:      rgba(255,255,255,0.04);
+            --border:        rgba(255,255,255,0.08);
+            --border-active: rgba(255,255,255,0.15);
+
+            --cyan:          #00f5ff;
+            --cyan-dim:      rgba(0,245,255,0.15);
+            --cyan-glow:     0 0 20px rgba(0,245,255,0.4);
+            --pink:          #ff6eb4;
+            --pink-dim:      rgba(255,110,180,0.15);
+            --pink-glow:     0 0 20px rgba(255,110,180,0.4);
+            --purple:        #b070ff;
+            --green:         #4ade80;
+            --amber:         #fbbf24;
+            --red:           #f87171;
+            --white:         #f0f4ff;
+            --muted:         #6b7280;
+
+            --font-main:  'Inter', sans-serif;
+            --font-mono:  'JetBrains Mono', monospace;
+            --radius-sm:  8px;
+            --radius-md:  16px;
+            --radius-lg:  32px;
+            --radius-xl:  48px;
+
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-primary);
+            color: var(--white);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* =============================================
+           BACKGROUND AMBIANCE
+           ============================================= */
+        .bg-glow {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            background:
+                radial-gradient(ellipse 60% 40% at 20% 30%, rgba(0,245,255,0.05) 0%, transparent 60%),
+                radial-gradient(ellipse 50% 35% at 80% 70%, rgba(255,110,180,0.05) 0%, transparent 60%),
+                radial-gradient(ellipse 40% 30% at 50% 50%, rgba(176,112,255,0.03) 0%, transparent 70%);
+        }
+
+        /* =============================================
+           LAYOUT
+           ============================================= */
+        .app-wrapper {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px 20px 48px;
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+        }
+
+        /* =============================================
+           HEADER
+           ============================================= */
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 20px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            backdrop-filter: blur(12px);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            font-size: 28px;
+            filter: drop-shadow(0 0 8px rgba(255,110,180,0.8));
+            animation: logo-pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes logo-pulse {
+            0%, 100% { filter: drop-shadow(0 0 8px rgba(255,110,180,0.8)); }
+            50%       { filter: drop-shadow(0 0 16px rgba(255,110,180,1)); }
+        }
+
+        .logo-text {
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, var(--pink) 0%, var(--cyan) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .logo-sub {
+            font-size: 11px;
+            color: var(--muted);
+            font-weight: 400;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .conn-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--muted);
+            font-family: var(--font-mono);
+        }
+
+        .conn-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--green);
+            box-shadow: 0 0 8px var(--green);
+            animation: pulse-dot 2s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50%       { opacity: 0.4; }
+        }
+
+        .ntp-time {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--cyan);
+            padding: 4px 10px;
+            background: var(--cyan-dim);
+            border-radius: var(--radius-sm);
+            border: 1px solid rgba(0,245,255,0.2);
+        }
+
+        /* =============================================
+           NETWORK TOPOLOGY BAND
+           ============================================= */
+        .network-band {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            padding: 14px 24px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+        }
+
+        .net-node {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            min-width: 80px;
+        }
+
+        .net-node-icon {
+            font-size: 22px;
+        }
+
+        .net-node-label {
+            font-size: 10px;
+            color: var(--muted);
+            font-family: var(--font-mono);
+            text-align: center;
+        }
+
+        .net-node-label strong {
+            display: block;
+            color: var(--white);
+            font-size: 11px;
+        }
+
+        .net-line {
+            flex: 1;
+            height: 2px;
+            background: linear-gradient(90deg, var(--border), var(--border-active), var(--border));
+            position: relative;
+            overflow: hidden;
+            max-width: 80px;
+        }
+
+        .net-line::after {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: -20%;
+            width: 40%;
+            height: 4px;
+            border-radius: 2px;
+            animation: data-flow 2s linear infinite;
+        }
+
+        .net-line.mqtt::after { background: var(--cyan); box-shadow: 0 0 6px var(--cyan); }
+        .net-line.http::after { background: var(--pink); box-shadow: 0 0 6px var(--pink); }
+
+        @keyframes data-flow {
+            from { left: -40%; }
+            to   { left: 100%; }
+        }
+
+        /* =============================================
+           MAIN SIMULATOR AREA
+           ============================================= */
+        .sim-area {
+            display: grid;
+            grid-template-columns: 1fr 280px 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+
+        /* =============================================
+           DEVICE CARD
+           ============================================= */
+        .device-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            padding: 28px 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            transition: border-color var(--transition);
+        }
+
+        .device-card:hover {
+            border-color: var(--border-active);
+        }
+
+        .device-header {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .device-id {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .device-name {
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .device-name.a { color: var(--pink); }
+        .device-name.b { color: var(--cyan); }
+
+        .device-id-sub {
+            font-size: 11px;
+            color: var(--muted);
+            font-family: var(--font-mono);
+        }
+
+        .device-state-badge {
+            font-size: 10px;
+            font-family: var(--font-mono);
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all var(--transition);
+        }
+
+        .badge-idle      { background: rgba(107,114,128,0.2); color: var(--muted); border: 1px solid rgba(107,114,128,0.3); }
+        .badge-recording { background: rgba(248,113,113,0.2); color: var(--red); border: 1px solid rgba(248,113,113,0.4); animation: badge-pulse 0.8s infinite; }
+        .badge-notify    { background: rgba(251,191,36,0.2); color: var(--amber); border: 1px solid rgba(251,191,36,0.4); }
+        .badge-playing   { background: rgba(0,245,255,0.15); color: var(--cyan); border: 1px solid rgba(0,245,255,0.3); }
+        .badge-paused    { background: rgba(251,191,36,0.2); color: var(--amber); border: 1px solid rgba(251,191,36,0.4); }
+        .badge-ping      { background: rgba(255,110,180,0.2); color: var(--pink); border: 1px solid rgba(255,110,180,0.4); animation: badge-pulse 0.6s infinite; }
+        .badge-uploading { background: rgba(176,112,255,0.2); color: var(--purple); border: 1px solid rgba(176,112,255,0.4); animation: badge-pulse 1s infinite; }
+
+        @keyframes badge-pulse {
+            0%, 100% { opacity: 1; }
+            50%       { opacity: 0.5; }
+        }
+
+        /* =============================================
+           PHYSICAL DEVICE (Casing Visual)
+           ============================================= */
+        .cat-casing {
+            position: relative;
+            width: 220px;
+            height: 180px;
+            border-radius: 55px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            border: 3px solid rgba(255,255,255,0.15);
+            box-shadow:
+                0 20px 60px rgba(0,0,0,0.5),
+                inset 0 1px 0 rgba(255,255,255,0.2);
+            transition: box-shadow var(--transition);
+        }
+
+        .cat-casing.device-a {
+            background: linear-gradient(145deg, #ffd6e5 0%, #f0a0c0 50%, #d48090 100%);
+        }
+
+        .cat-casing.device-b {
+            background: linear-gradient(145deg, #d6eaff 0%, #a0c4f0 50%, #6090d0 100%);
+        }
+
+        /* Cat ears */
+        .cat-ear {
+            position: absolute;
+            top: -22px;
+            width: 0;
+            height: 0;
+            border-left: 28px solid transparent;
+            border-right: 28px solid transparent;
+            z-index: -1;
+        }
+
+        .cat-ear.left  { left: 22px; }
+        .cat-ear.right { right: 22px; }
+
+        .device-a .cat-ear { border-bottom: 45px solid #ffb3cb; }
+        .device-b .cat-ear { border-bottom: 45px solid #a0c4f0; }
+
+        .cat-ear::after {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: -10px;
+            width: 0; height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+        }
+
+        .device-a .cat-ear::after { border-bottom: 20px solid #ff99bb; }
+        .device-b .cat-ear::after { border-bottom: 20px solid #88b4e8; }
+
+        /* Cat whiskers */
+        .whiskers {
+            position: absolute;
+            width: 100%;
+            top: 60%;
+            left: 0;
+            pointer-events: none;
+        }
+
+        .whisker-line {
+            position: absolute;
+            height: 2px;
+            background: rgba(255,255,255,0.5);
+            border-radius: 2px;
+        }
+
+        .whisker-line.wl1 { width: 38px; top: 0px;   left: -8px;  transform: rotate(8deg); }
+        .whisker-line.wl2 { width: 35px; top: 10px;  left: -10px; transform: rotate(-5deg); }
+        .whisker-line.wr1 { width: 38px; top: 0px;   right: -8px; transform: rotate(-8deg); }
+        .whisker-line.wr2 { width: 35px; top: 10px;  right: -10px; transform: rotate(5deg); }
+
+        /* Speaker grill */
+        .speaker-grill {
+            position: absolute;
+            bottom: 14px;
+            display: flex;
+            gap: 4px;
+        }
+
+        .grill-line {
+            width: 2px;
+            height: 14px;
+            border-radius: 2px;
+        }
+
+        .device-a .grill-line { background: rgba(180,80,100,0.4); }
+        .device-b .grill-line { background: rgba(60,120,180,0.4); }
+
+        /* PTT Side button */
+        .ptt-btn {
+            position: absolute;
+            right: -14px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 18px;
+            height: 40px;
+            border-radius: 0 12px 12px 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            font-size: 8px;
+            transition: all 0.1s;
+            user-select: none;
+        }
+
+        .device-a .ptt-btn { background: #d48090; box-shadow: 2px 2px 8px rgba(0,0,0,0.3); }
+        .device-b .ptt-btn { background: #6090d0; box-shadow: 2px 2px 8px rgba(0,0,0,0.3); }
+
+        .ptt-btn:active,
+        .ptt-btn.active {
+            transform: translateY(-50%) translateX(-2px);
+            box-shadow: 1px 1px 4px rgba(0,0,0,0.2) !important;
+        }
+
+        /* =============================================
+           OLED SCREEN
+           ============================================= */
+        .oled {
+            width: 130px;
+            height: 65px;
+            background: #000;
+            border-radius: 10px;
+            border: 2px solid #1a1a1a;
+            box-shadow:
+                inset 0 0 15px rgba(0,0,0,0.9),
+                0 0 0 1px rgba(255,255,255,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .oled::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg,
+                rgba(255,255,255,0.06) 0%,
+                transparent 45%);
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .oled::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0,0,0,0.15) 2px,
+                rgba(0,0,0,0.15) 3px
+            );
+            pointer-events: none;
+            z-index: 9;
+        }
+
+        .oled-state {
+            display: none;
+            width: 100%;
+            height: 100%;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            inset: 0;
+        }
+
+        .oled-state.active { display: flex; }
+
+        /* STATES */
+        .state-boot { flex-direction: column; gap: 2px; }
+        .boot-logo {
+            font-size: 18px;
+            font-weight: 800;
+            font-family: var(--font-mono);
+            color: var(--cyan);
+            text-shadow: var(--cyan-glow);
+            animation: boot-flicker 0.5s steps(1) 3;
+        }
+        @keyframes boot-flicker { 0%, 50% { opacity: 1; } 25%, 75% { opacity: 0; } }
+        .boot-sub { font-size: 7px; font-family: var(--font-mono); color: rgba(0,245,255,0.5); letter-spacing: 2px; }
+
+        .state-idle { gap: 22px; }
+        .oled-eye { width: 22px; height: 36px; border-radius: 11px; background: var(--cyan); box-shadow: var(--cyan-glow); animation: eye-blink 4s ease-in-out infinite; }
+        .oled-eye.right { animation-delay: 0.05s; }
+        @keyframes eye-blink { 0%, 45%, 50%, 100% { transform: scaleY(1); } 47% { transform: scaleY(0.05); } }
+        .oled-eye.squint { animation: eye-squint 6s 2s ease-in-out infinite; }
+        @keyframes eye-squint { 0%, 40%, 60%, 100% { transform: scaleY(1); } 48% { transform: scaleY(0.15); } 55% { transform: scaleY(0.4) scaleX(1.2); } }
+
+        .state-recording { flex-direction: column; gap: 4px; }
+        .rec-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--red); box-shadow: 0 0 12px var(--red); animation: rec-pulse 0.7s ease-in-out infinite; }
+        @keyframes rec-pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.3); opacity: 0.6; } }
+        .rec-label { font-size: 8px; font-family: var(--font-mono); color: var(--red); text-shadow: 0 0 6px var(--red); letter-spacing: 2px; }
+        .rec-waveform { display: flex; align-items: center; gap: 2px; height: 16px; }
+        .rec-wave-bar { width: 3px; background: var(--red); border-radius: 2px; animation: rec-wave 0.4s ease-in-out infinite alternate; }
+        .rec-wave-bar:nth-child(1) { animation-delay: 0.00s; height: 4px; }
+        .rec-wave-bar:nth-child(2) { animation-delay: 0.05s; height: 10px; }
+        .rec-wave-bar:nth-child(3) { animation-delay: 0.10s; height: 14px; }
+        .rec-wave-bar:nth-child(4) { animation-delay: 0.15s; height: 8px; }
+        .rec-wave-bar:nth-child(5) { animation-delay: 0.20s; height: 12px; }
+        .rec-wave-bar:nth-child(6) { animation-delay: 0.25s; height: 6px; }
+        .rec-wave-bar:nth-child(7) { animation-delay: 0.30s; height: 10px; }
+        @keyframes rec-wave { from { transform: scaleY(0.3); } to { transform: scaleY(1.0); } }
+
+        .state-uploading { flex-direction: column; gap: 4px; }
+        .upload-icon { font-size: 18px; animation: upload-bounce 0.8s ease-in-out infinite alternate; filter: drop-shadow(0 0 6px var(--purple)); }
+        @keyframes upload-bounce { from { transform: translateY(2px); } to { transform: translateY(-4px); } }
+        .upload-progress { width: 80px; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
+        .upload-bar { height: 100%; background: var(--purple); box-shadow: 0 0 6px var(--purple); border-radius: 2px; animation: upload-fill 1.5s linear forwards; }
+        @keyframes upload-fill { from { width: 0%; } to { width: 100%; } }
+        .upload-label { font-size: 7px; font-family: var(--font-mono); color: var(--purple); letter-spacing: 1px; }
+
+        .state-notify { flex-direction: column; gap: 2px; }
+        .notify-icon { font-size: 26px; animation: notify-bounce 0.9s ease-in-out infinite alternate; filter: drop-shadow(0 0 8px rgba(251,191,36,0.8)); }
+        @keyframes notify-bounce { from { transform: translateY(0) rotate(-5deg); } to { transform: translateY(-4px) rotate(5deg); } }
+        .notify-count { font-size: 9px; font-family: var(--font-mono); font-weight: 600; color: var(--amber); text-shadow: 0 0 8px var(--amber); letter-spacing: 1px; }
+
+        .state-playing { flex-direction: column; gap: 4px; }
+        .playing-eyes { display: flex; gap: 16px; }
+        .play-eye { width: 18px; height: 10px; border-radius: 0 0 12px 12px; background: var(--cyan); box-shadow: var(--cyan-glow); animation: play-eye-move 1s ease-in-out infinite alternate; }
+        @keyframes play-eye-move { from { transform: scaleX(1); } to { transform: scaleX(1.15); } }
+        .visualizer { display: flex; align-items: flex-end; gap: 3px; height: 28px; }
+        .viz-bar { width: 7px; border-radius: 3px 3px 0 0; background: var(--cyan); box-shadow: 0 0 4px var(--cyan); animation: viz-dance 0.4s ease-in-out infinite alternate; }
+        .viz-bar:nth-child(1) { animation-delay: 0.00s; height: 8px; }
+        .viz-bar:nth-child(2) { animation-delay: 0.07s; height: 18px; }
+        .viz-bar:nth-child(3) { animation-delay: 0.14s; height: 24px; }
+        .viz-bar:nth-child(4) { animation-delay: 0.21s; height: 14px; }
+        .viz-bar:nth-child(5) { animation-delay: 0.28s; height: 20px; }
+        @keyframes viz-dance { from { transform: scaleY(0.3); } to { transform: scaleY(1.0); } }
+
+        .state-paused { flex-direction: column; gap: 4px; color: var(--amber); }
+        .pause-bars { display: flex; gap: 6px; align-items: center; justify-content: center; height: 24px; }
+        .pause-bar { width: 6px; height: 22px; background: var(--amber); border-radius: 3px; box-shadow: 0 0 8px var(--amber); }
+        .pause-label { font-size: 8px; font-family: var(--font-mono); letter-spacing: 2px; text-shadow: 0 0 6px var(--amber); }
+
+        .state-ping { align-items: center; justify-content: center; }
+        .ping-heart { font-size: 36px; animation: heart-beat 0.6s ease-in-out infinite alternate; filter: drop-shadow(0 0 12px rgba(255,110,180,0.9)); }
+        @keyframes heart-beat { from { transform: scale(0.85); } to { transform: scale(1.1); } }
+
+        .state-setup { flex-direction: column; gap: 2px; }
+        .setup-icon { font-size: 14px; }
+        .setup-ssid { font-size: 7px; font-family: var(--font-mono); color: var(--green); text-shadow: 0 0 6px var(--green); }
+        .setup-label { font-size: 6px; color: rgba(255,255,255,0.4); font-family: var(--font-mono); text-align: center; letter-spacing: 0.5px; }
+
+        /* Multifunc button */
+        .multifunc-btn {
+            width: 32px;
+            height: 14px;
+            border-radius: 7px;
+            cursor: pointer;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 7px;
+            transition: all 0.1s;
+            user-select: none;
+        }
+
+        .device-a .multifunc-btn { background: rgba(180,80,100,0.6); color: rgba(255,255,255,0.6); }
+        .device-b .multifunc-btn { background: rgba(60,120,180,0.6); color: rgba(255,255,255,0.6); }
+
+        .multifunc-btn:active { transform: scale(0.92); }
+
+        /* Control buttons */
+        .btn-group {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .btn-section-label {
+            font-size: 10px;
+            font-family: var(--font-mono);
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 0 2px;
+        }
+
+        .btn-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+
+        .ctrl-btn {
+            padding: 8px 10px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--bg-glass);
+            color: var(--white);
+            font-size: 11px;
+            font-family: var(--font-main);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--transition);
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .ctrl-btn:hover {
+            background: rgba(255,255,255,0.08);
+            border-color: var(--border-active);
+        }
+
+        .ctrl-btn:active { transform: scale(0.97); }
+
+        .ctrl-btn.success { border-color: rgba(74,222,128,0.3); color: var(--green); }
+        .ctrl-btn.success:hover { background: rgba(74,222,128,0.1); border-color: rgba(74,222,128,0.5); }
+
+        .ctrl-btn.accent-a { border-color: rgba(255,110,180,0.3); color: var(--pink); }
+        .ctrl-btn.accent-a:hover { background: var(--pink-dim); border-color: rgba(255,110,180,0.5); }
+
+        .ctrl-btn.accent-b { border-color: rgba(0,245,255,0.3); color: var(--cyan); }
+        .ctrl-btn.accent-b:hover { background: var(--cyan-dim); border-color: rgba(0,245,255,0.5); }
+
+        .ptt-ctrl-btn {
+            width: 100%;
+            padding: 10px;
+            border-radius: var(--radius-sm);
+            border: 2px dashed var(--border);
+            background: transparent;
+            color: var(--muted);
+            font-size: 11px;
+            cursor: pointer;
+            transition: all var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            user-select: none;
+        }
+
+        .ptt-ctrl-btn.active {
+            border-color: var(--red);
+            background: rgba(248,113,113,0.1);
+            color: var(--red);
+        }
+
+        .ptt-ctrl-btn:hover:not(.active) {
+            border-color: var(--border-active);
+            color: var(--white);
+        }
+
+        /* OneButton Simulation Box */
+        .onebutton-panel {
+            padding: 10px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .onebutton-title {
+            font-size: 10px;
+            font-family: var(--font-mono);
+            color: var(--amber);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* VPS Panel */
+        .vps-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .vps-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .vps-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .vps-title-icon { font-size: 14px; }
+
+        .mqtt-topic-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .mqtt-topic {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            padding: 8px 10px;
+            background: var(--bg-glass);
+            border-radius: var(--radius-sm);
+            border-left: 3px solid transparent;
+            transition: all var(--transition);
+        }
+
+        .mqtt-topic.active-a { border-color: var(--pink); background: var(--pink-dim); }
+        .mqtt-topic.active-b { border-color: var(--cyan); background: var(--cyan-dim); }
+
+        .mqtt-topic-name { font-size: 10px; font-family: var(--font-mono); color: var(--muted); }
+        .mqtt-topic-status { font-size: 9px; color: var(--green); font-family: var(--font-mono); }
+        .mqtt-topic-status.idle-status { color: var(--muted); }
+
+        .http-route-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .http-route {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 10px;
+            background: var(--bg-glass);
+            border-radius: var(--radius-sm);
+        }
+
+        .route-method {
+            font-size: 9px;
+            font-family: var(--font-mono);
+            font-weight: 600;
+            padding: 1px 5px;
+            border-radius: 3px;
+        }
+
+        .method-post { background: rgba(74,222,128,0.2); color: var(--green); }
+        .method-get  { background: rgba(0,245,255,0.15); color: var(--cyan); }
+
+        .route-path { font-size: 9px; font-family: var(--font-mono); color: rgba(255,255,255,0.6); }
+        .route-hits { font-size: 9px; font-family: var(--font-mono); color: var(--muted); }
+
+        .file-queue {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 5px 8px;
+            border-radius: var(--radius-sm);
+            font-size: 9px;
+            font-family: var(--font-mono);
+            transition: all var(--transition);
+        }
+
+        .file-item.new  { background: rgba(251,191,36,0.1); color: var(--amber); }
+        .file-item.old  { background: rgba(107,114,128,0.1); color: var(--muted); }
+        .file-item.del  { background: rgba(248,113,113,0.1); color: var(--red); text-decoration: line-through; opacity: 0.5; }
+
+        .file-status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .file-item.new .file-status-dot  { background: var(--amber); box-shadow: 0 0 5px var(--amber); }
+        .file-item.old .file-status-dot  { background: var(--muted); }
+        .file-item.del .file-status-dot  { background: var(--red); }
+
+        /* Log Panel */
+        .log-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+        }
+
+        .log-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .log-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .log-clear-btn {
+            font-size: 10px;
+            color: var(--muted);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-family: var(--font-mono);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .log-clear-btn:hover { color: var(--red); }
+
+        .log-body {
+            height: 220px;
+            overflow-y: auto;
+            padding: 8px 0;
+            scrollbar-width: thin;
+        }
+
+        .log-entry {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            padding: 3px 16px;
+            font-size: 11px;
+            font-family: var(--font-mono);
+            line-height: 1.5;
+        }
+
+        .log-time { color: var(--muted); font-size: 10px; flex-shrink: 0; min-width: 72px; }
+        .log-source { font-size: 10px; font-weight: 600; padding: 0 5px; border-radius: 3px; flex-shrink: 0; }
+        .src-a      { background: var(--pink-dim); color: var(--pink); }
+        .src-b      { background: var(--cyan-dim); color: var(--cyan); }
+        .src-vps    { background: rgba(176,112,255,0.15); color: var(--purple); }
+        .src-mqtt   { background: rgba(74,222,128,0.1); color: var(--green); }
+        .src-system { background: rgba(107,114,128,0.15); color: var(--muted); }
+        .log-msg { color: rgba(255,255,255,0.75); flex: 1; }
+
+        footer { text-align: center; font-size: 11px; color: var(--muted); padding: 8px; }
+        footer span { color: var(--pink); }
+
+        .cat-casing.ping-flash { animation: casing-ping 0.5s ease-in-out 4; }
+        @keyframes casing-ping {
+            0%, 100% { box-shadow: 0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.2); }
+            50%       { box-shadow: 0 0 40px rgba(255,110,180,0.6), 0 0 80px rgba(255,110,180,0.3), inset 0 1px 0 rgba(255,255,255,0.3); }
+        }
+
+        @media (max-width: 900px) { .sim-area { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+<div class="bg-glow"></div>
+
+<div class="app-wrapper">
+
+    <!-- HEADER -->
+    <header>
+        <div class="logo">
+            <span class="logo-icon">🐱</span>
+            <div>
+                <div class="logo-text">Meowl</div>
+                <div class="logo-sub">IoT Voicemail Simulator · ESP32 LDR Edition</div>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="conn-status">
+                <div class="conn-dot"></div>
+                VPS: SG-01 · MQTT Online
+            </div>
+            <div class="ntp-time" id="ntp-clock">--:--:--</div>
+        </div>
+    </header>
+
+    <!-- NETWORK TOPOLOGY BAND -->
+    <div class="network-band">
+        <div class="net-node">
+            <div class="net-node-icon">📱</div>
+            <div class="net-node-label"><strong>andra_cat</strong>ESP32 · Device A</div>
+        </div>
+        <div class="net-line mqtt"></div>
+        <div class="net-node">
+            <div class="net-node-icon">📡</div>
+            <div class="net-node-label"><strong>MQTT Broker</strong>Mosquitto</div>
+        </div>
+        <div class="net-line mqtt"></div>
+        <div class="net-node">
+            <div class="net-node-icon">🖥️</div>
+            <div class="net-node-label"><strong>VPS · SG-01</strong>Node.js Express</div>
+        </div>
+        <div class="net-line http"></div>
+        <div class="net-node">
+            <div class="net-node-icon">📡</div>
+            <div class="net-node-label"><strong>MQTT Broker</strong>Mosquitto</div>
+        </div>
+        <div class="net-line http"></div>
+        <div class="net-node">
+            <div class="net-node-icon">📱</div>
+            <div class="net-node-label"><strong>partner_cat</strong>ESP32 · Device B</div>
+        </div>
+    </div>
+
+    <!-- MAIN SIMULATOR AREA -->
+    <div class="sim-area">
+
+        <!-- DEVICE A -->
+        <div class="device-card" id="card-a">
+            <div class="device-header">
+                <div class="device-id">
+                    <div class="device-name a">🐱 andra_cat</div>
+                    <div class="device-id-sub">ID: andra_cat · Target: partner_cat</div>
+                </div>
+                <div class="device-state-badge badge-idle" id="badge-a">IDLE</div>
+            </div>
+
+            <div class="cat-casing device-a" id="casing-a">
+                <div class="cat-ear left"></div>
+                <div class="cat-ear right"></div>
+                <div class="whiskers">
+                    <div class="whisker-line wl1"></div><div class="whisker-line wl2"></div>
+                    <div class="whisker-line wr1"></div><div class="whisker-line wr2"></div>
+                </div>
+
+                <button class="ptt-btn" id="ptt-a"
+                    onmousedown="startPTT('a')" onmouseup="stopPTT('a')" onmouseleave="stopPTT('a')"
+                    ontouchstart="startPTT('a')" ontouchend="stopPTT('a')" title="Hold Push-To-Talk">🐾</button>
+
+                <div class="oled" id="oled-a">
+                    <div class="oled-state state-boot" id="a-boot">
+                        <div class="boot-logo">MEOWL</div>
+                        <div class="boot-sub">ESP32</div>
+                    </div>
+                    <div class="oled-state state-idle" id="a-idle">
+                        <div class="oled-eye left squint"></div>
+                        <div class="oled-eye right"></div>
+                    </div>
+                    <div class="oled-state state-recording" id="a-recording">
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <div class="rec-dot"></div>
+                            <div class="rec-label">REC</div>
+                        </div>
+                        <div class="rec-waveform">
+                            <div class="rec-wave-bar"></div><div class="rec-wave-bar"></div>
+                            <div class="rec-wave-bar"></div><div class="rec-wave-bar"></div>
+                            <div class="rec-wave-bar"></div><div class="rec-wave-bar"></div>
+                            <div class="rec-wave-bar"></div>
+                        </div>
+                    </div>
+                    <div class="oled-state state-uploading" id="a-uploading">
+                        <div class="upload-icon">⬆️</div>
+                        <div class="upload-progress"><div class="upload-bar" id="a-upload-bar"></div></div>
+                        <div class="upload-label">UPLOADING</div>
+                    </div>
+                    <div class="oled-state state-notify" id="a-notify">
+                        <div class="notify-icon">💌</div>
+                        <div class="notify-count" id="a-notify-count">1 PESAN BARU</div>
+                    </div>
+                    <div class="oled-state state-playing" id="a-playing">
+                        <div class="playing-eyes">
+                            <div class="play-eye"></div>
+                            <div class="play-eye"></div>
+                        </div>
+                        <div class="visualizer">
+                            <div class="viz-bar"></div><div class="viz-bar"></div>
+                            <div class="viz-bar"></div><div class="viz-bar"></div>
+                            <div class="viz-bar"></div>
+                        </div>
+                    </div>
+                    <div class="oled-state state-paused" id="a-paused">
+                        <div class="pause-bars">
+                            <div class="pause-bar"></div>
+                            <div class="pause-bar"></div>
+                        </div>
+                        <div class="pause-label">PAUSED</div>
+                    </div>
+                    <div class="oled-state state-ping" id="a-ping">
+                        <div class="ping-heart">💗</div>
+                    </div>
+                    <div class="oled-state state-setup" id="a-setup">
+                        <div class="setup-icon">📶</div>
+                        <div class="setup-ssid">Meowl-Setup</div>
+                        <div class="setup-label">CAPTIVE PORTAL</div>
+                    </div>
+                </div>
+
+                <button class="multifunc-btn" id="mfn-a" onclick="handleOneButtonClick('a', 1)" title="Klik Tombol Tengah">·</button>
+
+                <div class="speaker-grill">
+                    <div class="grill-line"></div><div class="grill-line"></div><div class="grill-line"></div>
+                    <div class="grill-line"></div><div class="grill-line"></div><div class="grill-line"></div>
+                    <div class="grill-line"></div>
+                </div>
+            </div>
+
+            <!-- CONTROLS -->
+            <div class="btn-group">
+                <div class="btn-section-label">🎛 Kontrol Simulator</div>
+
+                <button class="ptt-ctrl-btn" id="ptt-ctrl-a"
+                    onmousedown="startPTT('a')" onmouseup="stopPTT('a')" onmouseleave="stopPTT('a')"
+                    ontouchstart="startPTT('a')" ontouchend="stopPTT('a')">
+                    🐾 Hold: Push-To-Talk (Record)
+                </button>
+
+                <!-- ONEBUTTON SIMULATION PANEL -->
+                <div class="onebutton-panel">
+                    <div class="onebutton-title">🔘 OneButton Handler (Tombol Tengah)</div>
+                    <div class="btn-row">
+                        <button class="ctrl-btn accent-b" onclick="handleOneButtonClick('a', 1)">1x Klik: Play/Replay</button>
+                        <button class="ctrl-btn" onclick="handleOneButtonClick('a', 2)">2x Klik: Pause/Resume</button>
+                    </div>
+                    <div class="btn-row">
+                        <button class="ctrl-btn" onclick="handleOneButtonClick('a', 3)">3x Klik: Skip</button>
+                        <button class="ctrl-btn accent-a" onclick="handleOneButtonClick('a', 'long')">Hold >1.5s: Ping Hati</button>
+                    </div>
+                </div>
+
+                <div class="btn-row">
+                    <button class="ctrl-btn" onclick="setDeviceState('a','idle')">😴 Idle</button>
+                    <button class="ctrl-btn success" onclick="simulateReceive('a')">💌 Terima Pesan</button>
+                </div>
+                <div class="btn-row">
+                    <button class="ctrl-btn" onclick="setDeviceState('a','setup')">📶 Captive Portal</button>
+                    <button class="ctrl-btn" onclick="setDeviceState('a','boot')">🔄 Reboot</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- VPS PANEL -->
+        <div class="vps-panel">
+            <div class="vps-card">
+                <div class="vps-title"><span class="vps-title-icon">🖥️</span> VPS · SG-01</div>
+                <div style="display:flex;flex-direction:column;gap:4px;">
+                    <div style="display:flex;justify-content:space-between;font-size:10px;">
+                        <span style="color:var(--muted);font-family:var(--font-mono)">CPU</span>
+                        <span style="color:var(--green);font-family:var(--font-mono)" id="vps-cpu">3.2%</span>
+                    </div>
+                    <div style="height:3px;background:rgba(255,255,255,0.08);border-radius:2px;">
+                        <div id="vps-cpu-bar" style="height:100%;width:3.2%;background:var(--green);border-radius:2px;transition:width 1s;"></div>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;font-size:10px;margin-top:4px;">
+                        <span style="color:var(--muted);font-family:var(--font-mono)">Uptime</span>
+                        <span style="color:var(--cyan);font-family:var(--font-mono)" id="vps-uptime">0d 0h 0m</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="vps-card">
+                <div class="vps-title"><span class="vps-title-icon">📡</span> MQTT Topics</div>
+                <div class="mqtt-topic-list">
+                    <div class="mqtt-topic" id="mqtt-a">
+                        <div class="mqtt-topic-name">meowl/andra_cat/notify</div>
+                        <div class="mqtt-topic-status idle-status" id="mqtt-a-status">Subscribed · Idle</div>
+                    </div>
+                    <div class="mqtt-topic" id="mqtt-b">
+                        <div class="mqtt-topic-name">meowl/partner_cat/notify</div>
+                        <div class="mqtt-topic-status idle-status" id="mqtt-b-status">Subscribed · Idle</div>
+                    </div>
+                    <div class="mqtt-topic" id="mqtt-ping-a">
+                        <div class="mqtt-topic-name">meowl/andra_cat/ping</div>
+                        <div class="mqtt-topic-status idle-status" id="mqtt-pa-status">Subscribed · Idle</div>
+                    </div>
+                    <div class="mqtt-topic" id="mqtt-ping-b">
+                        <div class="mqtt-topic-name">meowl/partner_cat/ping</div>
+                        <div class="mqtt-topic-status idle-status" id="mqtt-pb-status">Subscribed · Idle</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="vps-card">
+                <div class="vps-title"><span class="vps-title-icon">🌐</span> HTTP Express Routes</div>
+                <div class="http-route-list">
+                    <div class="http-route">
+                        <span class="route-method method-post">POST</span>
+                        <span class="route-path">/upload/:id</span>
+                        <span class="route-hits" id="hits-post">0 req</span>
+                    </div>
+                    <div class="http-route">
+                        <span class="route-method method-get">GET</span>
+                        <span class="route-path">/download/:id</span>
+                        <span class="route-hits" id="hits-get">0 req</span>
+                    </div>
+                    <div class="http-route">
+                        <span class="route-method method-get">GET</span>
+                        <span class="route-path">/status</span>
+                        <span class="route-hits" id="hits-status">0 req</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="vps-card">
+                <div class="vps-title"><span class="vps-title-icon">💾</span> SD Card Queue (Unread Tracking)</div>
+                <div class="file-queue" id="file-queue-a">
+                    <div style="font-size:10px;color:var(--muted);font-family:var(--font-mono);text-align:center;padding:8px 0;">
+                        Tidak ada file
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DEVICE B -->
+        <div class="device-card" id="card-b">
+            <div class="device-header">
+                <div class="device-id">
+                    <div class="device-name b">🐱 partner_cat</div>
+                    <div class="device-id-sub">ID: partner_cat · Target: andra_cat</div>
+                </div>
+                <div class="device-state-badge badge-idle" id="badge-b">IDLE</div>
+            </div>
+
+            <div class="cat-casing device-b" id="casing-b">
+                <div class="cat-ear left"></div>
+                <div class="cat-ear right"></div>
+                <div class="whiskers">
+                    <div class="whisker-line wl1"></div><div class="whisker-line wl2"></div>
+                    <div class="whisker-line wr1"></div><div class="whisker-line wr2"></div>
+                </div>
+
+                <button class="ptt-btn" id="ptt-b"
+                    onmousedown="startPTT('b')" onmouseup="stopPTT('b')" onmouseleave="stopPTT('b')"
+                    ontouchstart="startPTT('b')" ontouchend="stopPTT('b')" title="Hold Push-To-Talk">🐾</button>
+
+                <div class="oled" id="oled-b">
+                    <div class="oled-state state-boot" id="b-boot">
+                        <div class="boot-logo">MEOWL</div>
+                        <div class="boot-sub">ESP32</div>
+                    </div>
+                    <div class="oled-state state-idle" id="b-idle">
+                        <div class="oled-eye left"></div>
+                        <div class="oled-eye right squint"></div>
+                    </div>
+                    <div class="oled-state state-recording" id="b-recording">
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <div class="rec-dot"></div>
+                            <div class="rec-label">REC</div>
+                        </div>
+                        <div class="rec-waveform">
+                            <div class="rec-wave-bar"></div><div class="rec-wave-bar"></div>
+                            <div class="rec-wave-bar"></div><div class="rec-wave-bar"></div>
+                            <div class="rec-wave-bar"></div><div class="rec-wave-bar"></div>
+                            <div class="rec-wave-bar"></div>
+                        </div>
+                    </div>
+                    <div class="oled-state state-uploading" id="b-uploading">
+                        <div class="upload-icon">⬆️</div>
+                        <div class="upload-progress"><div class="upload-bar" id="b-upload-bar"></div></div>
+                        <div class="upload-label">UPLOADING</div>
+                    </div>
+                    <div class="oled-state state-notify" id="b-notify">
+                        <div class="notify-icon">💌</div>
+                        <div class="notify-count" id="b-notify-count">1 PESAN BARU</div>
+                    </div>
+                    <div class="oled-state state-playing" id="b-playing">
+                        <div class="playing-eyes">
+                            <div class="play-eye"></div>
+                            <div class="play-eye"></div>
+                        </div>
+                        <div class="visualizer">
+                            <div class="viz-bar"></div><div class="viz-bar"></div>
+                            <div class="viz-bar"></div><div class="viz-bar"></div>
+                            <div class="viz-bar"></div>
+                        </div>
+                    </div>
+                    <div class="oled-state state-paused" id="b-paused">
+                        <div class="pause-bars">
+                            <div class="pause-bar"></div>
+                            <div class="pause-bar"></div>
+                        </div>
+                        <div class="pause-label">PAUSED</div>
+                    </div>
+                    <div class="oled-state state-ping" id="b-ping">
+                        <div class="ping-heart">💗</div>
+                    </div>
+                    <div class="oled-state state-setup" id="b-setup">
+                        <div class="setup-icon">📶</div>
+                        <div class="setup-ssid">Meowl-Setup</div>
+                        <div class="setup-label">CAPTIVE PORTAL</div>
+                    </div>
+                </div>
+
+                <button class="multifunc-btn" id="mfn-b" onclick="handleOneButtonClick('b', 1)" title="Klik Tombol Tengah">·</button>
+
+                <div class="speaker-grill">
+                    <div class="grill-line"></div><div class="grill-line"></div><div class="grill-line"></div>
+                    <div class="grill-line"></div><div class="grill-line"></div><div class="grill-line"></div>
+                    <div class="grill-line"></div>
+                </div>
+            </div>
+
+            <!-- CONTROLS -->
+            <div class="btn-group">
+                <div class="btn-section-label">🎛 Kontrol Simulator</div>
+
+                <button class="ptt-ctrl-btn" id="ptt-ctrl-b"
+                    onmousedown="startPTT('b')" onmouseup="stopPTT('b')" onmouseleave="stopPTT('b')"
+                    ontouchstart="startPTT('b')" ontouchend="stopPTT('b')">
+                    🐾 Hold: Push-To-Talk (Record)
+                </button>
+
+                <!-- ONEBUTTON SIMULATION PANEL -->
+                <div class="onebutton-panel">
+                    <div class="onebutton-title">🔘 OneButton Handler (Tombol Tengah)</div>
+                    <div class="btn-row">
+                        <button class="ctrl-btn accent-b" onclick="handleOneButtonClick('b', 1)">1x Klik: Play/Replay</button>
+                        <button class="ctrl-btn" onclick="handleOneButtonClick('b', 2)">2x Klik: Pause/Resume</button>
+                    </div>
+                    <div class="btn-row">
+                        <button class="ctrl-btn" onclick="handleOneButtonClick('b', 3)">3x Klik: Skip</button>
+                        <button class="ctrl-btn accent-a" onclick="handleOneButtonClick('b', 'long')">Hold >1.5s: Ping Hati</button>
+                    </div>
+                </div>
+
+                <div class="btn-row">
+                    <button class="ctrl-btn" onclick="setDeviceState('b','idle')">😴 Idle</button>
+                    <button class="ctrl-btn success" onclick="simulateReceive('b')">💌 Terima Pesan</button>
+                </div>
+                <div class="btn-row">
+                    <button class="ctrl-btn" onclick="setDeviceState('b','setup')">📶 Captive Portal</button>
+                    <button class="ctrl-btn" onclick="setDeviceState('b','boot')">🔄 Reboot</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOG PANEL -->
+    <div class="log-panel">
+        <div class="log-header">
+            <div class="log-title">📋 Activity Log · Serial Monitor</div>
+            <button class="log-clear-btn" onclick="clearLog()">Clear</button>
+        </div>
+        <div class="log-body" id="log-body"></div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+        Meowl Simulator · ESP32 IoT LDR Voicemail System · Built with <span>♥</span> for long distance love
+    </footer>
+
+</div>
+
+<script>
+    // ─── STATE & DATA ────────────────────────────────────────────────────────
+    const deviceState = { a: 'boot', b: 'boot' };
+    const sdQueue     = { a: [], b: [] }; // Array of { name: 'baru_*.wav', status: 'baru'|'lama' }
+    const pttTimer    = {};
+    let postHits = 0, getHits = 0, statusHits = 0;
+    let uptimeSeconds = 0;
+    const prevState   = { a: 'idle', b: 'idle' };
+    const STATES      = ['boot','idle','recording','uploading','notify','playing','paused','ping','setup'];
+
+    // ─── OLED STATE MACHINE ──────────────────────────────────────────────────
+    function setDeviceState(dev, state) {
+        STATES.forEach(s => {
+            const el = document.getElementById(`${dev}-${s}`);
+            if (el) el.classList.remove('active');
+        });
+
+        const active = document.getElementById(`${dev}-${state}`);
+        if (active) active.classList.add('active');
+
+        deviceState[dev] = state;
+        updateBadge(dev, state);
+
+        const labels = {
+            idle: '😴 State → IDLE (Mata Berkedip)',
+            recording: '🔴 State → RECORDING (Mikrofon Aktif)',
+            uploading: '⬆️ State → UPLOADING (HTTP POST ke VPS)',
+            notify: '💌 State → NOTIFY (Pesan Baru)',
+            playing: '▶️ State → PLAYING (Audio Visualizer)',
+            paused: '⏸️ State → PAUSED (Audio Dihentikan Sementara)',
+            ping: '💗 State → PING (Hati Berdenyut 5s)',
+            boot: '🔄 State → BOOTING (Animasi Logo)',
+            setup: '📶 State → SETUP (Captive Portal)',
+        };
+        addLog(dev, labels[state] || state);
+
+        if (state === 'boot') {
+            setTimeout(() => setDeviceState(dev, 'idle'), 2000);
+        }
+
+        if (state === 'ping') {
+            const casing = document.getElementById(`casing-${dev}`);
+            casing.classList.add('ping-flash');
+            setTimeout(() => casing.classList.remove('ping-flash'), 2200);
+            setTimeout(() => {
+                if (deviceState[dev] === 'ping') setDeviceState(dev, prevState[dev] || 'idle');
+            }, 5000);
+        }
+
+        if (state !== 'ping') prevState[dev] = state;
+    }
+
+    function updateBadge(dev, state) {
+        const badge = document.getElementById(`badge-${dev}`);
+        const map = {
+            idle:      ['badge-idle',      'IDLE'],
+            recording: ['badge-recording', '⏺ REC'],
+            uploading: ['badge-uploading', '⬆ UPLOAD'],
+            notify:    ['badge-notify',    '💌 PESAN'],
+            playing:   ['badge-playing',   '▶ PLAY'],
+            paused:    ['badge-paused',    '⏸ PAUSE'],
+            ping:      ['badge-ping',      '💗 PING'],
+            boot:      ['badge-idle',      '🔄 BOOT'],
+            setup:     ['badge-idle',      '📶 SETUP'],
+        };
+        badge.className = `device-state-badge ${map[state][0]}`;
+        badge.textContent = map[state][1];
+    }
+
+    // ─── ONEBUTTON EVENT HANDLERS (PRD ALIGNED) ──────────────────────────────
+    function handleOneButtonClick(dev, clickType) {
+        const state = deviceState[dev];
+
+        if (clickType === 1) { // 1x CLICK: PLAY / REPLAY
+            addLog(dev, `🔘 [OneButton] attachClick (1x Klik) → playAudio()`);
+            
+            if (state === 'paused') {
+                setDeviceState(dev, 'playing');
+                addLog(dev, `▶️ Audio Resumed dari posisi jeda`);
+                return;
+            }
+
+            const unreadIndex = sdQueue[dev].findIndex(item => item.status === 'baru');
+
+            if (unreadIndex !== -1) {
+                // Play unread message & rename baru_*.wav -> lama_*.wav
+                const targetFile = sdQueue[dev][unreadIndex];
+                targetFile.status = 'lama';
+                targetFile.name = targetFile.name.replace('baru_', 'lama_');
+
+                addLog(dev, `▶️ Memutar pesan baru: "${targetFile.name}"`);
+                addLog(dev, `💾 SD Card rename: "baru_*.wav" ➔ "lama_*.wav" (24h GC aktif)`);
+
+                updateUnreadUI(dev);
+                setDeviceState(dev, 'playing');
+
+                setTimeout(() => {
+                    if (deviceState[dev] === 'playing') {
+                        addLog(dev, `✅ Selesai memutar audio`);
+                        updateUnreadUI(dev);
+                    }
+                }, 5000);
+
+            } else if (sdQueue[dev].length > 0) {
+                // Replay last read message
+                addLog(dev, `🔁 Replay: Tidak ada pesan baru, memutar ulang pesan lama`);
+                setDeviceState(dev, 'playing');
+                setTimeout(() => {
+                    if (deviceState[dev] === 'playing') setDeviceState(dev, 'idle');
+                }, 5000);
+            } else {
+                addLog(dev, `ℹ️ SD Card kosong (tidak ada pesan)`);
+            }
+
+        } else if (clickType === 2) { // 2x CLICK: PAUSE / RESUME
+            addLog(dev, `🔘 [OneButton] attachDoubleClick (2x Klik) → pauseAudio()`);
+            if (state === 'playing') {
+                setDeviceState(dev, 'paused');
+                addLog(dev, `⏸️ Audio Paused (isPaused = true)`);
+            } else if (state === 'paused') {
+                setDeviceState(dev, 'playing');
+                addLog(dev, `▶️ Audio Resumed (isPaused = false)`);
+            } else {
+                addLog(dev, `⚠️ Tidak ada pemutaran audio aktif untuk di-pause`);
+            }
+
+        } else if (clickType === 3) { // 3x CLICK: SKIP MESSAGE
+            addLog(dev, `🔘 [OneButton] attachMultiClick (3x Klik) → skipAudio()`);
+            if (state === 'playing' || state === 'paused') {
+                addLog(dev, `⏭️ file.close() dipanggil, meloncat ke pesan berikutnya...`);
+                setDeviceState(dev, 'idle');
+                setTimeout(() => handleOneButtonClick(dev, 1), 300);
+            } else {
+                addLog(dev, `ℹ️ Tidak ada audio aktif untuk di-skip`);
+            }
+
+        } else if (clickType === 'long') { // LONG PRESS (>1.5s): PING HATI
+            sendPing(dev);
+        }
+    }
+
+    // ─── UNREAD COUNTER LOGIC ─────────────────────────────────────────────────
+    function updateUnreadUI(dev) {
+        const unreadCount = sdQueue[dev].filter(f => f.status === 'baru').length;
+        const countEl = document.getElementById(`${dev}-notify-count`);
+        countEl.textContent = `${unreadCount} PESAN BARU`;
+
+        if (unreadCount > 0 && deviceState[dev] !== 'playing' && deviceState[dev] !== 'paused') {
+            setDeviceState(dev, 'notify');
+        } else if (unreadCount === 0 && deviceState[dev] === 'notify') {
+            setDeviceState(dev, 'idle');
+        }
+
+        renderQueue();
+    }
+
+    function renderQueue() {
+        const queueEl = document.getElementById('file-queue-a');
+        const allFiles = [...sdQueue.a.map(f => ({...f, dev: 'ANDRA'})), ...sdQueue.b.map(f => ({...f, dev: 'PARTNER'}))];
+
+        if (allFiles.length === 0) {
+            queueEl.innerHTML = `<div style="font-size:10px;color:var(--muted);font-family:var(--font-mono);text-align:center;padding:8px 0;">Tidak ada file</div>`;
+            return;
+        }
+
+        queueEl.innerHTML = allFiles.map(f => `
+            <div class="file-item ${f.status}">
+                <div class="file-status-dot"></div>
+                <span class="file-name" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${f.name}</span>
+                <span style="color:var(--muted);margin-left:4px;">${f.dev}</span>
+            </div>
+        `).join('');
+    }
+
+    // ─── PTT (PUSH-TO-TALK) ──────────────────────────────────────────────────
+    function startPTT(dev) {
+        if (deviceState[dev] === 'recording') return;
+        setDeviceState(dev, 'recording');
+        pttTimer[dev] = Date.now();
+
+        document.getElementById(`ptt-ctrl-${dev}`).classList.add('active');
+        document.getElementById(`ptt-${dev}`).classList.add('active');
+        addLog(dev, `🎙️ PTT Ditekan → INMP441 I2S capture aktif`);
+    }
+
+    function stopPTT(dev) {
+        if (deviceState[dev] !== 'recording') return;
+        const duration = ((Date.now() - pttTimer[dev]) / 1000).toFixed(1);
+
+        document.getElementById(`ptt-ctrl-${dev}`).classList.remove('active');
+        document.getElementById(`ptt-${dev}`).classList.remove('active');
+
+        if (duration < 0.3) {
+            addLog(dev, `⚠️ PTT terlalu singkat (${duration}s) → Rekaman dibatalkan`);
+            setDeviceState(dev, 'idle');
+            return;
+        }
+
+        addLog(dev, `🎙️ PTT Dilepas → Rekaman ${duration}s selesai, buffer ${Math.round(duration * 32 + 4)}KB`);
+        setTimeout(() => {
+            setDeviceState(dev, 'uploading');
+            simulateUpload(dev, parseFloat(duration));
+        }, 300);
+    }
+
+    function simulateUpload(dev, recDuration) {
+        const target = dev === 'a' ? 'b' : 'a';
+        const filename = `baru_${Math.floor(Date.now()/1000)}.wav`;
+        const size = Math.round(recDuration * 32 + 4);
+
+        addLog('vps', `POST /upload/${target === 'a'?'andra':'partner'}_cat ← [${dev.toUpperCase()}] "${filename}" (${size}KB)`);
+        postHits++; updateHits();
+
+        const bar = document.getElementById(`${dev}-upload-bar`);
+        bar.style.animation = 'none'; bar.offsetHeight;
+        bar.style.animation = 'upload-fill 1.5s linear forwards';
+
+        setTimeout(() => {
+            addLog('vps', `✅ File disimpan → /var/meowl/${target === 'a'?'andra':'partner'}_cat/${filename}`);
+            addLog('mqtt', `📡 MQTT PUBLISH → meowl/${target}_cat/notify · payload: {"file":"${filename}"}`);
+
+            flashMQTT(target);
+            simulateReceive(target, filename);
+            setDeviceState(dev, 'idle');
+        }, 1700);
+    }
+
+    function simulateReceive(dev, filename) {
+        if (!filename) filename = `baru_${Math.floor(Date.now()/1000)}.wav`;
+
+        sdQueue[dev].push({ name: filename, status: 'baru' });
+
+        addLog('vps', `GET /download/${dev === 'a'?'andra':'partner'}_cat/${filename}`);
+        getHits++; updateHits();
+
+        addLog(dev, `💾 File diterima → SD Card: "${filename}" (UNREAD)`);
+        addLog('mqtt', `📡 MQTT meowl/${dev}_cat/notify → trigger download & notifikasi`);
+
+        updateUnreadUI(dev);
+        flashMQTT(dev);
+    }
+
+    function sendPing(from) {
+        const to = from === 'a' ? 'b' : 'a';
+        addLog('mqtt', `💗 MQTT PUBLISH meowl/${to}_cat/ping · payload: {"from":"${from === 'a'?'andra':'partner'}_cat"}`);
+        addLog(from, `💗 Ping Hati terkirim → ${to === 'a'?'andra':'partner'}_cat`);
+        flashMQTTPing(to);
+
+        setTimeout(() => {
+            addLog(to, `💗 PING DITERIMA dari ${from === 'a'?'andra':'partner'}_cat!`);
+            setDeviceState(to, 'ping');
+        }, 400);
+    }
+
+    // ─── MQTT FLASH VISUALS ──────────────────────────────────────────────────
+    function flashMQTT(dev) {
+        const el = document.getElementById(`mqtt-${dev}`);
+        const statusEl = document.getElementById(`mqtt-${dev}-status`);
+        el.classList.add(`active-${dev}`);
+        statusEl.textContent = 'PUBLISH received!';
+        statusEl.className = 'mqtt-topic-status';
+        setTimeout(() => {
+            el.classList.remove(`active-${dev}`);
+            statusEl.textContent = 'Subscribed · Idle';
+            statusEl.className = 'mqtt-topic-status idle-status';
+        }, 2000);
+    }
+
+    function flashMQTTPing(dev) {
+        const el = document.getElementById(`mqtt-ping-${dev}`);
+        const statusEl = document.getElementById(`mqtt-p${dev}-status`);
+        el.classList.add(`active-${dev}`);
+        statusEl.textContent = '💗 PING received!';
+        statusEl.className = 'mqtt-topic-status';
+        setTimeout(() => {
+            el.classList.remove(`active-${dev}`);
+            statusEl.textContent = 'Subscribed · Idle';
+            statusEl.className = 'mqtt-topic-status idle-status';
+        }, 2000);
+    }
+
+    function updateHits() {
+        document.getElementById('hits-post').textContent   = `${postHits} req`;
+        document.getElementById('hits-get').textContent    = `${getHits} req`;
+        document.getElementById('hits-status').textContent = `${statusHits} req`;
+    }
+
+    // ─── LOGGING & CLOCK ──────────────────────────────────────────────────────
+    function addLog(source, msg) {
+        const logBody = document.getElementById('log-body');
+        const entry   = document.createElement('div');
+        entry.className = 'log-entry';
+
+        const srcMap = {
+            a:      ['ANDRA', 'src-a'],
+            b:      ['PART.',  'src-b'],
+            vps:    ['VPS',   'src-vps'],
+            mqtt:   ['MQTT',  'src-mqtt'],
+            system: ['SYS',   'src-system'],
+        };
+
+        const [label, cls] = srcMap[source] || ['LOG', 'src-system'];
+        entry.innerHTML = `
+            <span class="log-time">${getCurrentTime()}</span>
+            <span class="log-source ${cls}">${label}</span>
+            <span class="log-msg">${msg}</span>
+        `;
+        logBody.appendChild(entry);
+        logBody.scrollTop = logBody.scrollHeight;
+
+        while (logBody.children.length > 120) {
+            logBody.removeChild(logBody.firstChild);
+        }
+    }
+
+    function clearLog() {
+        document.getElementById('log-body').innerHTML = '';
+        addLog('system', '📋 Log dibersihkan');
+    }
+
+    function getCurrentTime() {
+        return new Date().toLocaleTimeString('id-ID', { hour12: false });
+    }
+
+    function updateVPSMetrics() {
+        uptimeSeconds++;
+        const d = Math.floor(uptimeSeconds / 86400);
+        const h = Math.floor((uptimeSeconds % 86400) / 3600);
+        const m = Math.floor((uptimeSeconds % 3600) / 60);
+        document.getElementById('vps-uptime').textContent = `${d}d ${h}h ${m}m`;
+
+        const cpu = (Math.random() * 5 + 1).toFixed(1);
+        document.getElementById('vps-cpu').textContent = `${cpu}%`;
+        document.getElementById('vps-cpu-bar').style.width = `${cpu}%`;
+    }
+
+    function updateClock() {
+        document.getElementById('ntp-clock').textContent =
+            new Date().toLocaleTimeString('id-ID', { hour12: false });
+    }
+
+    function init() {
+        setDeviceState('a', 'boot');
+        setDeviceState('b', 'boot');
+
+        addLog('system', '🚀 Meowl Simulator dimulai · ESP32 WROOM x2');
+        addLog('system', '⚡ Sistem daya: TP4056 → LiPo 3.7V → ESP32 VIN');
+        addLog('system', '🔘 OneButton Handler: 1x Play/Replay, 2x Pause/Resume, 3x Skip, Hold Ping');
+        addLog('system', '📡 Menghubungkan ke VPS SG-01...');
+        setTimeout(() => addLog('mqtt', '✅ MQTT Broker terhubung · Mosquitto 2.0.18'), 800);
+        setTimeout(() => addLog('system', '🕐 NTP sync selesai · WIB (UTC+7)'), 1200);
+        setTimeout(() => {
+            addLog('system', '✅ Semua subsistem ONLINE · Meowl siap!');
+        }, 2100);
+
+        setInterval(updateClock, 1000);
+        setInterval(updateVPSMetrics, 1000);
+    }
+
+    window.addEventListener('DOMContentLoaded', init);
+</script>
+
+</body>
+</html>

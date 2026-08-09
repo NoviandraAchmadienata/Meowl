@@ -1,0 +1,439 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="2dp">
+
+    <!-- Top Row: Cat Ears -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="22dp"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp">
+
+        <ImageView
+            android:id="@+id/img_widget_ear_left"
+            android:layout_width="26dp"
+            android:layout_height="22dp"
+            android:layout_alignParentStart="true"
+            android:src="@drawable/ic_cat_ear_left"
+            android:contentDescription="Left Ear" />
+
+        <ImageView
+            android:id="@+id/img_widget_ear_right"
+            android:layout_width="26dp"
+            android:layout_height="22dp"
+            android:layout_alignParentEnd="true"
+            android:src="@drawable/ic_cat_ear_right"
+            android:contentDescription="Right Ear" />
+    </RelativeLayout>
+
+    <!-- Outer Cat Squircle Casing Container -->
+    <LinearLayout
+        android:id="@+id/widget_cat_casing"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="@drawable/bg_cat_casing_pink"
+        android:orientation="vertical"
+        android:padding="8dp"
+        android:gravity="center">
+
+        <!-- Top Header: Title & Unread Badge -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="4dp">
+
+            <TextView
+                android:id="@+id/txt_widget_title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="MEOWL"
+                android:textColor="#FFFFFF"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/txt_unread_badge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0 UNREAD"
+                android:textColor="#FBBF24"
+                android:textSize="9sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- OLED Screen Container -->
+        <RelativeLayout
+            android:id="@+id/widget_oled_screen"
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:background="@drawable/bg_oled_screen"
+            android:padding="4dp">
+
+            <!-- 1. STATE IDLE: Guaranteed 100% Continuous Auto-Blinking ViewFlipper -->
+            <ViewFlipper
+                android:id="@+id/flipper_idle_eyes"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:autoStart="true"
+                android:flipInterval="3200"
+                android:inAnimation="@anim/widget_eye_fade_in"
+                android:outAnimation="@anim/widget_eye_fade_out"
+                android:visibility="visible">
+
+                <!-- Frame 1: Open Cyan Eyes -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center">
+                    <ImageView
+                        android:id="@+id/img_idle_eyes_bitmap"
+                        android:layout_width="18dp"
+                        android:layout_height="30dp"
+                        android:layout_marginEnd="16dp"
+                        android:src="@drawable/bg_cyan_eye"
+                        android:contentDescription="Eye Left Open" />
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="30dp"
+                        android:src="@drawable/bg_cyan_eye"
+                        android:contentDescription="Eye Right Open" />
+                </LinearLayout>
+
+                <!-- Frame 2: Natural Smooth Blink Slit -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center">
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="6dp"
+                        android:layout_marginEnd="16dp"
+                        android:src="@drawable/bg_cyan_eye"
+                        android:contentDescription="Eye Left Blink Slit" />
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="6dp"
+                        android:src="@drawable/bg_cyan_eye"
+                        android:contentDescription="Eye Right Blink Slit" />
+                </LinearLayout>
+            </ViewFlipper>
+
+            <!-- 2. STATE RECORDING: Pulsing Red Dot + 7 Waveform Bars -->
+            <LinearLayout
+                android:id="@+id/layout_recording_wave"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="REC ●"
+                    android:textColor="#F87171"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
+
+                <ViewFlipper
+                    android:id="@+id/flipper_rec_bars"
+                    android:layout_width="wrap_content"
+                    android:layout_height="18dp"
+                    android:autoStart="true"
+                    android:flipInterval="200">
+
+                    <!-- Frame 1 -->
+                    <LinearLayout android:layout_width="wrap_content" android:layout_height="18dp" android:orientation="horizontal" android:gravity="bottom">
+                        <ImageView android:layout_width="3dp" android:layout_height="4dp"  android:layout_marginEnd="2dp" android:src="@drawable/bg_btn_record" android:contentDescription="r1"/>
+                        <ImageView android:layout_width="3dp" android:layout_height="10dp" android:layout_marginEnd="2dp" android:src="@drawable/bg_btn_record" android:contentDescription="r2"/>
+                        <ImageView android:layout_width="3dp" android:layout_height="16dp" android:layout_marginEnd="2dp" android:src="@drawable/bg_btn_record" android:contentDescription="r3"/>
+                        <ImageView android:layout_width="3dp" android:layout_height="8dp"  android:layout_marginEnd="2dp" android:src="@drawable/bg_btn_record" android:contentDescription="r4"/>
+                        <ImageView android:layout_width="3dp" android:layout_height="14dp" android:layout_marginEnd="2dp" android:src="@drawable/bg_btn_record" android:contentDescription="r5"/>
+                        <ImageView android:layout_width="3dp" android:layout_height="6dp"  android:layout_marginEnd="2dp" android:src="@drawable/bg_btn_record" android:contentDescription="r6"/>
+                        <ImageView android:layout_width="3dp" android:layout_height="12dp" android:src="@drawable/bg_btn_record" android:contentDescription="r7"/>
+                    </LinearLayout>
+
+                    <!-- Frame 2 -->
+                    <LinearLayout android:layout_width="wrap_content" android:layout_height="18dp" android:orientation="horizontal" android:gravity="bottom">
+                        <ImageView android:layout_width="3dp" android:layout_height="12dp" android:layout_marginEnd="2dp" android:src="@drawable/bg_btn_record" android:contentDescription="r1"/>
+                        <ImageView android:layout_width="3dp" android:layout_height="5dp"  android:layout_marginEnd="2dp" android:src="@drawable/bg_btn_record" android:contentDescription="r2"/>
+                        <ImageView android:layout_width="3dp" android:layout_height="8dp"  android:layout_marginEnd="2dp" android:src="@drawable/bg_btn_record" android:contentDescription="r3"/>
+                        <ImageView android:layout_width="3dp" android:layout_height="16dp" android:layout_marginEnd="2dp" android:src="@drawable/bg_btn_record" android:contentDescription="r4"/>
+                        <ImageView android:layout_width="3dp" android:layout_height="6dp"  android:layout_marginEnd="2dp" android:src="@drawable/bg_btn_record" android:contentDescription="r5"/>
+                        <ImageView android:layout_width="3dp" android:layout_height="14dp" android:layout_marginEnd="2dp" android:src="@drawable/bg_btn_record" android:contentDescription="r6"/>
+                        <ImageView android:layout_width="3dp" android:layout_height="4dp"  android:src="@drawable/bg_btn_record" android:contentDescription="r7"/>
+                    </LinearLayout>
+                </ViewFlipper>
+            </LinearLayout>
+
+            <!-- 3. STATE PLAYING: Happy Half-Moon Eyes + 5 Visualizer Bars -->
+            <LinearLayout
+                android:id="@+id/layout_playing_viz"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="4dp">
+
+                    <TextView
+                        android:layout_width="16dp"
+                        android:layout_height="8dp"
+                        android:layout_marginEnd="14dp"
+                        android:background="@drawable/bg_btn_play" />
+
+                    <TextView
+                        android:layout_width="16dp"
+                        android:layout_height="8dp"
+                        android:background="@drawable/bg_btn_play" />
+                </LinearLayout>
+
+                <ViewFlipper
+                    android:id="@+id/flipper_viz"
+                    android:layout_width="wrap_content"
+                    android:layout_height="22dp"
+                    android:autoStart="true"
+                    android:flipInterval="200">
+
+                    <!-- Frame A -->
+                    <LinearLayout android:layout_width="wrap_content" android:layout_height="22dp" android:orientation="horizontal" android:gravity="bottom">
+                        <ImageView android:layout_width="5dp" android:layout_height="8dp"  android:layout_marginEnd="3dp" android:src="@drawable/bg_btn_play" android:contentDescription="v1"/>
+                        <ImageView android:layout_width="5dp" android:layout_height="18dp" android:layout_marginEnd="3dp" android:src="@drawable/bg_btn_play" android:contentDescription="v2"/>
+                        <ImageView android:layout_width="5dp" android:layout_height="22dp" android:layout_marginEnd="3dp" android:src="@drawable/bg_btn_play" android:contentDescription="v3"/>
+                        <ImageView android:layout_width="5dp" android:layout_height="14dp" android:layout_marginEnd="3dp" android:src="@drawable/bg_btn_play" android:contentDescription="v4"/>
+                        <ImageView android:layout_width="5dp" android:layout_height="20dp" android:src="@drawable/bg_btn_play" android:contentDescription="v5"/>
+                    </LinearLayout>
+
+                    <!-- Frame B -->
+                    <LinearLayout android:layout_width="wrap_content" android:layout_height="22dp" android:orientation="horizontal" android:gravity="bottom">
+                        <ImageView android:layout_width="5dp" android:layout_height="20dp" android:layout_marginEnd="3dp" android:src="@drawable/bg_btn_play" android:contentDescription="v1"/>
+                        <ImageView android:layout_width="5dp" android:layout_height="10dp" android:layout_marginEnd="3dp" android:src="@drawable/bg_btn_play" android:contentDescription="v2"/>
+                        <ImageView android:layout_width="5dp" android:layout_height="12dp" android:layout_marginEnd="3dp" android:src="@drawable/bg_btn_play" android:contentDescription="v3"/>
+                        <ImageView android:layout_width="5dp" android:layout_height="22dp" android:layout_marginEnd="3dp" android:src="@drawable/bg_btn_play" android:contentDescription="v4"/>
+                        <ImageView android:layout_width="5dp" android:layout_height="9dp"  android:src="@drawable/bg_btn_play" android:contentDescription="v5"/>
+                    </LinearLayout>
+                </ViewFlipper>
+            </LinearLayout>
+
+            <!-- 4. STATE SENT / SUCCESS CONFIRMATION DISPLAY -->
+            <LinearLayout
+                android:id="@+id/layout_sent_success"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:visibility="gone">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_check"
+                    android:contentDescription="Sent Checkmark" />
+
+                <TextView
+                    android:id="@+id/txt_sent_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="TERKIRIM!"
+                    android:textColor="#4ADE80"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- 5. STATE PAUSED: Double Pause Bars || -->
+            <LinearLayout
+                android:id="@+id/layout_paused_bars"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="6dp"
+                    android:layout_height="22dp"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/bg_oled_screen" />
+
+                <TextView
+                    android:layout_width="6dp"
+                    android:layout_height="22dp"
+                    android:background="@drawable/bg_oled_screen" />
+            </LinearLayout>
+
+            <!-- 6. STATE PING: Heartbeat Icon -->
+            <ViewFlipper
+                android:id="@+id/img_ping_heart"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_centerInParent="true"
+                android:autoStart="true"
+                android:flipInterval="350"
+                android:visibility="gone">
+
+                <ImageView
+                    android:layout_width="26dp"
+                    android:layout_height="26dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_heart"
+                    android:contentDescription="Ping Heart Small" />
+
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_heart"
+                    android:contentDescription="Ping Heart Large" />
+            </ViewFlipper>
+        </RelativeLayout>
+
+        <!-- Middle Dot Button -->
+        <ImageView
+            android:id="@+id/btn_middle_dot"
+            android:layout_width="20dp"
+            android:layout_height="6dp"
+            android:layout_marginTop="3dp"
+            android:layout_marginBottom="3dp"
+            android:src="@drawable/bg_oled_screen"
+            android:contentDescription="Middle Dot" />
+
+        <!-- 1. Normal State Action Buttons Row -->
+        <LinearLayout
+            android:id="@+id/layout_widget_normal_btns"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:visibility="visible">
+
+            <TextView
+                android:id="@+id/btn_widget_play"
+                android:layout_width="0dp"
+                android:layout_height="28dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="4dp"
+                android:background="@drawable/bg_btn_play"
+                android:gravity="center"
+                android:text="PLAY"
+                android:textColor="#0D0F14"
+                android:textSize="9sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/btn_widget_record"
+                android:layout_width="0dp"
+                android:layout_height="28dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="4dp"
+                android:background="@drawable/bg_btn_record"
+                android:gravity="center"
+                android:text="REC"
+                android:textColor="#FFFFFF"
+                android:textSize="9sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/btn_widget_ping"
+                android:layout_width="0dp"
+                android:layout_height="28dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_btn_ping"
+                android:gravity="center"
+                android:text="PING"
+                android:textColor="#FFFFFF"
+                android:textSize="9sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- 2. Playing State Action Buttons Row (PAUSE vs STOP) -->
+        <LinearLayout
+            android:id="@+id/layout_widget_play_btns"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/btn_widget_pause"
+                android:layout_width="0dp"
+                android:layout_height="28dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="4dp"
+                android:background="@drawable/bg_btn_play"
+                android:gravity="center"
+                android:text="PAUSE"
+                android:textColor="#0D0F14"
+                android:textSize="9sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/btn_widget_stop_play"
+                android:layout_width="0dp"
+                android:layout_height="28dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_oled_screen"
+                android:gravity="center"
+                android:text="STOP"
+                android:textColor="#FFFFFF"
+                android:textSize="9sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- 3. Recording State Action Buttons Row (STOP vs CANCEL) -->
+        <LinearLayout
+            android:id="@+id/layout_widget_rec_btns"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/btn_widget_stop"
+                android:layout_width="0dp"
+                android:layout_height="28dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="4dp"
+                android:background="@drawable/bg_btn_record"
+                android:gravity="center"
+                android:text="STOP"
+                android:textColor="#FFFFFF"
+                android:textSize="9sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/btn_widget_cancel"
+                android:layout_width="0dp"
+                android:layout_height="28dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_oled_screen"
+                android:gravity="center"
+                android:text="CANCEL"
+                android:textColor="#FFFFFF"
+                android:textSize="9sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+    </LinearLayout>
+</LinearLayout>
