@@ -2,10 +2,11 @@ package com.meowl.app.audio
 
 import android.content.Context
 import android.media.MediaPlayer
+import android.widget.Toast
 import java.io.File
 
 /**
- * Non-blocking Audio Player Helper with Pause/Resume for Meowl Voicemail Playback.
+ * Non-blocking Audio Player Helper with Pause/Resume and Crash-Proof Error Handling.
  */
 class AudioPlayer(private val context: Context) {
 
@@ -13,14 +14,34 @@ class AudioPlayer(private val context: Context) {
 
     fun playAudioFile(file: File, onComplete: () -> Unit) {
         stopAudio()
-        mediaPlayer = MediaPlayer().apply {
-            setDataSource(file.absolutePath)
-            prepare()
-            setOnCompletionListener {
-                onComplete()
-                stopAudio()
+
+        if (!file.exists() || file.length() <= 0L) {
+            Toast.makeText(context, "File audio tidak valid", Toast.LENGTH_SHORT).show()
+            onComplete()
+            return
+        }
+
+        try {
+            mediaPlayer = MediaPlayer().apply {
+                setDataSource(file.absolutePath)
+                prepare()
+                setOnCompletionListener {
+                    onComplete()
+                    stopAudio()
+                }
+                setOnErrorListener { _, _, _ ->
+                    Toast.makeText(context, "Gagal memutar audio", Toast.LENGTH_SHORT).show()
+                    onComplete()
+                    stopAudio()
+                    true
+                }
+                start()
             }
-            start()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Toast.makeText(context, "Gagal membuka audio", Toast.LENGTH_SHORT).show()
+            onComplete()
+            stopAudio()
         }
     }
 

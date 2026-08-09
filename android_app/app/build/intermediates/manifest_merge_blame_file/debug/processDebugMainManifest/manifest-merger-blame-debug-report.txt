@@ -60,153 +60,154 @@
 33-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:18:9-54
 34        android:supportsRtl="true"
 34-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:19:9-35
-35        android:theme="@style/Theme.MeowlApp"
-35-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:20:9-46
-36        android:usesCleartextTraffic="true" >
-36-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:21:9-44
-37
-38        <!-- Main Activity -->
-39        <activity
-39-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:25:9-34:20
-40            android:name="com.meowl.app.MainActivity"
-40-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:26:13-41
-41            android:exported="true"
-41-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:27:13-36
-42            android:label="@string/app_name"
-42-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:28:13-45
-43            android:theme="@style/Theme.MeowlApp" >
-43-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:29:13-50
-44            <intent-filter>
-44-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:30:13-33:29
-45                <action android:name="android.intent.action.MAIN" />
-45-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:31:17-69
-45-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:31:25-66
-46
-47                <category android:name="android.intent.category.LAUNCHER" />
-47-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:32:17-77
-47-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:32:27-74
-48            </intent-filter>
-49        </activity>
-50
-51        <!-- Home Screen AppWidget Receiver (Interactive Cat Eyes Widget) -->
-52        <receiver
-52-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:37:9-50:20
-53            android:name="com.meowl.app.widget.MeowlCatWidgetProvider"
-53-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:38:13-58
-54            android:exported="true"
-54-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:39:13-36
-55            android:label="Meowl Cat Eyes Widget" >
-55-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:40:13-50
-56            <intent-filter>
-56-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:41:13-46:29
-57                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-57-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:42:17-84
-57-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:42:25-81
-58                <action android:name="com.meowl.app.ACTION_WIDGET_TAP_PLAY" />
-58-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:43:17-79
-58-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:43:25-76
-59                <action android:name="com.meowl.app.ACTION_WIDGET_SEND_PING" />
-59-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:44:17-80
-59-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:44:25-77
-60                <action android:name="com.meowl.app.ACTION_WIDGET_RECORD_TOGGLE" />
-60-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:45:17-84
-60-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:45:25-81
-61            </intent-filter>
-62
-63            <meta-data
-63-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:47:13-49:61
-64                android:name="android.appwidget.provider"
-64-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:48:17-58
-65                android:resource="@xml/meowl_widget_info" />
-65-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:49:17-58
-66        </receiver>
-67
-68        <!-- Smooth Widget Animation Background Service -->
-69        <service
-69-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:53:9-55:40
-70            android:name="com.meowl.app.widget.WidgetAnimationService"
-70-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:54:13-58
-71            android:exported="false" />
-71-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:55:13-37
-72
-73        <activity
-73-->[androidx.compose.ui:ui-test-manifest:1.5.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\fc06cca361e5ff079e42311b41d9b805\transformed\ui-test-manifest-1.5.0\AndroidManifest.xml:23:9-25:39
-74            android:name="androidx.activity.ComponentActivity"
-74-->[androidx.compose.ui:ui-test-manifest:1.5.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\fc06cca361e5ff079e42311b41d9b805\transformed\ui-test-manifest-1.5.0\AndroidManifest.xml:24:13-63
-75            android:exported="true" />
-75-->[androidx.compose.ui:ui-test-manifest:1.5.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\fc06cca361e5ff079e42311b41d9b805\transformed\ui-test-manifest-1.5.0\AndroidManifest.xml:25:13-36
-76        <activity
-76-->[androidx.compose.ui:ui-tooling-android:1.5.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\163846f739548d3383d3431664ba803e\transformed\ui-tooling-release\AndroidManifest.xml:23:9-25:39
-77            android:name="androidx.compose.ui.tooling.PreviewActivity"
-77-->[androidx.compose.ui:ui-tooling-android:1.5.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\163846f739548d3383d3431664ba803e\transformed\ui-tooling-release\AndroidManifest.xml:24:13-71
-78            android:exported="true" />
-78-->[androidx.compose.ui:ui-tooling-android:1.5.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\163846f739548d3383d3431664ba803e\transformed\ui-tooling-release\AndroidManifest.xml:25:13-36
-79
-80        <provider
-80-->[androidx.emoji2:emoji2:1.4.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\b16aa3da6b811859c8c229e8bb532667\transformed\emoji2-1.4.0\AndroidManifest.xml:24:9-32:20
-81            android:name="androidx.startup.InitializationProvider"
-81-->[androidx.emoji2:emoji2:1.4.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\b16aa3da6b811859c8c229e8bb532667\transformed\emoji2-1.4.0\AndroidManifest.xml:25:13-67
-82            android:authorities="com.meowl.app.androidx-startup"
-82-->[androidx.emoji2:emoji2:1.4.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\b16aa3da6b811859c8c229e8bb532667\transformed\emoji2-1.4.0\AndroidManifest.xml:26:13-68
-83            android:exported="false" >
-83-->[androidx.emoji2:emoji2:1.4.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\b16aa3da6b811859c8c229e8bb532667\transformed\emoji2-1.4.0\AndroidManifest.xml:27:13-37
-84            <meta-data
-84-->[androidx.emoji2:emoji2:1.4.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\b16aa3da6b811859c8c229e8bb532667\transformed\emoji2-1.4.0\AndroidManifest.xml:29:13-31:52
-85                android:name="androidx.emoji2.text.EmojiCompatInitializer"
-85-->[androidx.emoji2:emoji2:1.4.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\b16aa3da6b811859c8c229e8bb532667\transformed\emoji2-1.4.0\AndroidManifest.xml:30:17-75
-86                android:value="androidx.startup" />
-86-->[androidx.emoji2:emoji2:1.4.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\b16aa3da6b811859c8c229e8bb532667\transformed\emoji2-1.4.0\AndroidManifest.xml:31:17-49
-87            <meta-data
-87-->[androidx.lifecycle:lifecycle-process:2.6.2] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\a3f7c51003acf8d04728f89ab17ec6c7\transformed\lifecycle-process-2.6.2\AndroidManifest.xml:29:13-31:52
-88                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
-88-->[androidx.lifecycle:lifecycle-process:2.6.2] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\a3f7c51003acf8d04728f89ab17ec6c7\transformed\lifecycle-process-2.6.2\AndroidManifest.xml:30:17-78
-89                android:value="androidx.startup" />
-89-->[androidx.lifecycle:lifecycle-process:2.6.2] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\a3f7c51003acf8d04728f89ab17ec6c7\transformed\lifecycle-process-2.6.2\AndroidManifest.xml:31:17-49
-90            <meta-data
-90-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\47fe7c2cd98bea821bae115240c05317\transformed\profileinstaller-1.3.0\AndroidManifest.xml:29:13-31:52
-91                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
-91-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\47fe7c2cd98bea821bae115240c05317\transformed\profileinstaller-1.3.0\AndroidManifest.xml:30:17-85
-92                android:value="androidx.startup" />
-92-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\47fe7c2cd98bea821bae115240c05317\transformed\profileinstaller-1.3.0\AndroidManifest.xml:31:17-49
-93        </provider>
-94
-95        <receiver
-95-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\47fe7c2cd98bea821bae115240c05317\transformed\profileinstaller-1.3.0\AndroidManifest.xml:34:9-52:20
-96            android:name="androidx.profileinstaller.ProfileInstallReceiver"
-96-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\47fe7c2cd98bea821bae115240c05317\transformed\profileinstaller-1.3.0\AndroidManifest.xml:35:13-76
-97            android:directBootAware="false"
-97-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\47fe7c2cd98bea821bae115240c05317\transformed\profileinstaller-1.3.0\AndroidManifest.xml:36:13-44
-98            android:enabled="true"
-98-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\47fe7c2cd98bea821bae115240c05317\transformed\profileinstaller-1.3.0\AndroidManifest.xml:37:13-35
-99            android:exported="true"
-99-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\47fe7c2cd98bea821bae115240c05317\transformed\profileinstaller-1.3.0\AndroidManifest.xml:38:13-36
-100            android:permission="android.permission.DUMP" >
-100-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\47fe7c2cd98bea821bae115240c05317\transformed\profileinstaller-1.3.0\AndroidManifest.xml:39:13-57
-101            <intent-filter>
-101-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\47fe7c2cd98bea821bae115240c05317\transformed\profileinstaller-1.3.0\AndroidManifest.xml:40:13-42:29
-102                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
-102-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\47fe7c2cd98bea821bae115240c05317\transformed\profileinstaller-1.3.0\AndroidManifest.xml:41:17-91
-102-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\47fe7c2cd98bea821bae115240c05317\transformed\profileinstaller-1.3.0\AndroidManifest.xml:41:25-88
-103            </intent-filter>
-104            <intent-filter>
-104-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\47fe7c2cd98bea821bae115240c05317\transformed\profileinstaller-1.3.0\AndroidManifest.xml:43:13-45:29
-105                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
-105-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\47fe7c2cd98bea821bae115240c05317\transformed\profileinstaller-1.3.0\AndroidManifest.xml:44:17-85
-105-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\47fe7c2cd98bea821bae115240c05317\transformed\profileinstaller-1.3.0\AndroidManifest.xml:44:25-82
-106            </intent-filter>
-107            <intent-filter>
-107-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\47fe7c2cd98bea821bae115240c05317\transformed\profileinstaller-1.3.0\AndroidManifest.xml:46:13-48:29
-108                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
-108-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\47fe7c2cd98bea821bae115240c05317\transformed\profileinstaller-1.3.0\AndroidManifest.xml:47:17-88
-108-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\47fe7c2cd98bea821bae115240c05317\transformed\profileinstaller-1.3.0\AndroidManifest.xml:47:25-85
-109            </intent-filter>
-110            <intent-filter>
-110-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\47fe7c2cd98bea821bae115240c05317\transformed\profileinstaller-1.3.0\AndroidManifest.xml:49:13-51:29
-111                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
-111-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\47fe7c2cd98bea821bae115240c05317\transformed\profileinstaller-1.3.0\AndroidManifest.xml:50:17-95
-111-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\47fe7c2cd98bea821bae115240c05317\transformed\profileinstaller-1.3.0\AndroidManifest.xml:50:25-92
-112            </intent-filter>
-113        </receiver>
-114    </application>
-115
-116</manifest>
+35        android:testOnly="true"
+36        android:theme="@style/Theme.MeowlApp"
+36-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:20:9-46
+37        android:usesCleartextTraffic="true" >
+37-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:21:9-44
+38
+39        <!-- Main Activity -->
+40        <activity
+40-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:25:9-34:20
+41            android:name="com.meowl.app.MainActivity"
+41-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:26:13-41
+42            android:exported="true"
+42-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:27:13-36
+43            android:label="@string/app_name"
+43-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:28:13-45
+44            android:theme="@style/Theme.MeowlApp" >
+44-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:29:13-50
+45            <intent-filter>
+45-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:30:13-33:29
+46                <action android:name="android.intent.action.MAIN" />
+46-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:31:17-69
+46-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:31:25-66
+47
+48                <category android:name="android.intent.category.LAUNCHER" />
+48-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:32:17-77
+48-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:32:27-74
+49            </intent-filter>
+50        </activity>
+51
+52        <!-- Home Screen AppWidget Receiver (Interactive Cat Eyes Widget) -->
+53        <receiver
+53-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:37:9-50:20
+54            android:name="com.meowl.app.widget.MeowlCatWidgetProvider"
+54-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:38:13-58
+55            android:exported="true"
+55-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:39:13-36
+56            android:label="Meowl Cat Eyes Widget" >
+56-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:40:13-50
+57            <intent-filter>
+57-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:41:13-46:29
+58                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+58-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:42:17-84
+58-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:42:25-81
+59                <action android:name="com.meowl.app.ACTION_WIDGET_TAP_PLAY" />
+59-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:43:17-79
+59-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:43:25-76
+60                <action android:name="com.meowl.app.ACTION_WIDGET_SEND_PING" />
+60-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:44:17-80
+60-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:44:25-77
+61                <action android:name="com.meowl.app.ACTION_WIDGET_RECORD_TOGGLE" />
+61-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:45:17-84
+61-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:45:25-81
+62            </intent-filter>
+63
+64            <meta-data
+64-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:47:13-49:61
+65                android:name="android.appwidget.provider"
+65-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:48:17-58
+66                android:resource="@xml/meowl_widget_info" />
+66-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:49:17-58
+67        </receiver>
+68
+69        <!-- Smooth Widget Animation Background Service -->
+70        <service
+70-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:53:9-55:40
+71            android:name="com.meowl.app.widget.WidgetAnimationService"
+71-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:54:13-58
+72            android:exported="false" />
+72-->C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\AndroidManifest.xml:55:13-37
+73
+74        <activity
+74-->[androidx.compose.ui:ui-test-manifest:1.5.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\fc06cca361e5ff079e42311b41d9b805\transformed\ui-test-manifest-1.5.0\AndroidManifest.xml:23:9-25:39
+75            android:name="androidx.activity.ComponentActivity"
+75-->[androidx.compose.ui:ui-test-manifest:1.5.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\fc06cca361e5ff079e42311b41d9b805\transformed\ui-test-manifest-1.5.0\AndroidManifest.xml:24:13-63
+76            android:exported="true" />
+76-->[androidx.compose.ui:ui-test-manifest:1.5.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\fc06cca361e5ff079e42311b41d9b805\transformed\ui-test-manifest-1.5.0\AndroidManifest.xml:25:13-36
+77        <activity
+77-->[androidx.compose.ui:ui-tooling-android:1.5.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\163846f739548d3383d3431664ba803e\transformed\ui-tooling-release\AndroidManifest.xml:23:9-25:39
+78            android:name="androidx.compose.ui.tooling.PreviewActivity"
+78-->[androidx.compose.ui:ui-tooling-android:1.5.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\163846f739548d3383d3431664ba803e\transformed\ui-tooling-release\AndroidManifest.xml:24:13-71
+79            android:exported="true" />
+79-->[androidx.compose.ui:ui-tooling-android:1.5.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\163846f739548d3383d3431664ba803e\transformed\ui-tooling-release\AndroidManifest.xml:25:13-36
+80
+81        <provider
+81-->[androidx.emoji2:emoji2:1.4.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\b16aa3da6b811859c8c229e8bb532667\transformed\emoji2-1.4.0\AndroidManifest.xml:24:9-32:20
+82            android:name="androidx.startup.InitializationProvider"
+82-->[androidx.emoji2:emoji2:1.4.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\b16aa3da6b811859c8c229e8bb532667\transformed\emoji2-1.4.0\AndroidManifest.xml:25:13-67
+83            android:authorities="com.meowl.app.androidx-startup"
+83-->[androidx.emoji2:emoji2:1.4.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\b16aa3da6b811859c8c229e8bb532667\transformed\emoji2-1.4.0\AndroidManifest.xml:26:13-68
+84            android:exported="false" >
+84-->[androidx.emoji2:emoji2:1.4.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\b16aa3da6b811859c8c229e8bb532667\transformed\emoji2-1.4.0\AndroidManifest.xml:27:13-37
+85            <meta-data
+85-->[androidx.emoji2:emoji2:1.4.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\b16aa3da6b811859c8c229e8bb532667\transformed\emoji2-1.4.0\AndroidManifest.xml:29:13-31:52
+86                android:name="androidx.emoji2.text.EmojiCompatInitializer"
+86-->[androidx.emoji2:emoji2:1.4.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\b16aa3da6b811859c8c229e8bb532667\transformed\emoji2-1.4.0\AndroidManifest.xml:30:17-75
+87                android:value="androidx.startup" />
+87-->[androidx.emoji2:emoji2:1.4.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\b16aa3da6b811859c8c229e8bb532667\transformed\emoji2-1.4.0\AndroidManifest.xml:31:17-49
+88            <meta-data
+88-->[androidx.lifecycle:lifecycle-process:2.6.2] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\a3f7c51003acf8d04728f89ab17ec6c7\transformed\lifecycle-process-2.6.2\AndroidManifest.xml:29:13-31:52
+89                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
+89-->[androidx.lifecycle:lifecycle-process:2.6.2] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\a3f7c51003acf8d04728f89ab17ec6c7\transformed\lifecycle-process-2.6.2\AndroidManifest.xml:30:17-78
+90                android:value="androidx.startup" />
+90-->[androidx.lifecycle:lifecycle-process:2.6.2] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\a3f7c51003acf8d04728f89ab17ec6c7\transformed\lifecycle-process-2.6.2\AndroidManifest.xml:31:17-49
+91            <meta-data
+91-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\47fe7c2cd98bea821bae115240c05317\transformed\profileinstaller-1.3.0\AndroidManifest.xml:29:13-31:52
+92                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
+92-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\47fe7c2cd98bea821bae115240c05317\transformed\profileinstaller-1.3.0\AndroidManifest.xml:30:17-85
+93                android:value="androidx.startup" />
+93-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\47fe7c2cd98bea821bae115240c05317\transformed\profileinstaller-1.3.0\AndroidManifest.xml:31:17-49
+94        </provider>
+95
+96        <receiver
+96-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\47fe7c2cd98bea821bae115240c05317\transformed\profileinstaller-1.3.0\AndroidManifest.xml:34:9-52:20
+97            android:name="androidx.profileinstaller.ProfileInstallReceiver"
+97-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\47fe7c2cd98bea821bae115240c05317\transformed\profileinstaller-1.3.0\AndroidManifest.xml:35:13-76
+98            android:directBootAware="false"
+98-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\47fe7c2cd98bea821bae115240c05317\transformed\profileinstaller-1.3.0\AndroidManifest.xml:36:13-44
+99            android:enabled="true"
+99-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\47fe7c2cd98bea821bae115240c05317\transformed\profileinstaller-1.3.0\AndroidManifest.xml:37:13-35
+100            android:exported="true"
+100-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\47fe7c2cd98bea821bae115240c05317\transformed\profileinstaller-1.3.0\AndroidManifest.xml:38:13-36
+101            android:permission="android.permission.DUMP" >
+101-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\47fe7c2cd98bea821bae115240c05317\transformed\profileinstaller-1.3.0\AndroidManifest.xml:39:13-57
+102            <intent-filter>
+102-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\47fe7c2cd98bea821bae115240c05317\transformed\profileinstaller-1.3.0\AndroidManifest.xml:40:13-42:29
+103                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
+103-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\47fe7c2cd98bea821bae115240c05317\transformed\profileinstaller-1.3.0\AndroidManifest.xml:41:17-91
+103-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\47fe7c2cd98bea821bae115240c05317\transformed\profileinstaller-1.3.0\AndroidManifest.xml:41:25-88
+104            </intent-filter>
+105            <intent-filter>
+105-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\47fe7c2cd98bea821bae115240c05317\transformed\profileinstaller-1.3.0\AndroidManifest.xml:43:13-45:29
+106                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
+106-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\47fe7c2cd98bea821bae115240c05317\transformed\profileinstaller-1.3.0\AndroidManifest.xml:44:17-85
+106-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\47fe7c2cd98bea821bae115240c05317\transformed\profileinstaller-1.3.0\AndroidManifest.xml:44:25-82
+107            </intent-filter>
+108            <intent-filter>
+108-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\47fe7c2cd98bea821bae115240c05317\transformed\profileinstaller-1.3.0\AndroidManifest.xml:46:13-48:29
+109                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
+109-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\47fe7c2cd98bea821bae115240c05317\transformed\profileinstaller-1.3.0\AndroidManifest.xml:47:17-88
+109-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\47fe7c2cd98bea821bae115240c05317\transformed\profileinstaller-1.3.0\AndroidManifest.xml:47:25-85
+110            </intent-filter>
+111            <intent-filter>
+111-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\47fe7c2cd98bea821bae115240c05317\transformed\profileinstaller-1.3.0\AndroidManifest.xml:49:13-51:29
+112                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
+112-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\47fe7c2cd98bea821bae115240c05317\transformed\profileinstaller-1.3.0\AndroidManifest.xml:50:17-95
+112-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Lenovo\.gradle\caches\9.5.0\transforms\47fe7c2cd98bea821bae115240c05317\transformed\profileinstaller-1.3.0\AndroidManifest.xml:50:25-92
+113            </intent-filter>
+114        </receiver>
+115    </application>
+116
+117</manifest>

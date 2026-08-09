@@ -305,6 +305,32 @@
                     android:src="@drawable/ic_heart"
                     android:contentDescription="Ping Heart Large" />
             </ViewFlipper>
+
+            <!-- 7. STATE INCOMING MSG NOTIFICATION DISPLAY (NOTIFY) -->
+            <LinearLayout
+                android:id="@+id/layout_incoming_notify"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:visibility="gone">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_history"
+                    android:contentDescription="Notification Mail Icon" />
+
+                <TextView
+                    android:id="@+id/txt_notify_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="1 PESAN BARU"
+                    android:textColor="#FBBF24"
+                    android:textSize="9sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
         </RelativeLayout>
 
         <!-- Middle Dot Button -->

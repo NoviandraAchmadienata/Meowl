@@ -33,12 +33,14 @@ int drawable ic_heart 0x0
 int drawable ic_history 0x0
 int drawable ic_launcher_background 0x0
 int drawable ic_launcher_foreground 0x0
+int drawable ic_moon 0x0
 int drawable ic_pause 0x0
 int drawable ic_paw 0x0
 int drawable ic_play 0x0
 int drawable ic_settings 0x0
 int drawable ic_star 0x0
 int drawable ic_stop 0x0
+int drawable ic_sun 0x0
 int drawable ic_trash 0x0
 int id btn_middle_dot 0x0
 int id btn_widget_cancel 0x0
@@ -55,6 +57,7 @@ int id img_idle_eyes_bitmap 0x0
 int id img_ping_heart 0x0
 int id img_widget_ear_left 0x0
 int id img_widget_ear_right 0x0
+int id layout_incoming_notify 0x0
 int id layout_paused_bars 0x0
 int id layout_playing_viz 0x0
 int id layout_recording_wave 0x0
@@ -62,6 +65,7 @@ int id layout_sent_success 0x0
 int id layout_widget_normal_btns 0x0
 int id layout_widget_play_btns 0x0
 int id layout_widget_rec_btns 0x0
+int id txt_notify_label 0x0
 int id txt_sent_label 0x0
 int id txt_unread_badge 0x0
 int id txt_widget_title 0x0

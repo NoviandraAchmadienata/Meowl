@@ -11,7 +11,7 @@ import org.json.JSONObject
 
 /**
  * Lightweight, non-blocking NetworkRelay Helper for Meowl VPS Communication.
- * Handles HTTP REST API uploads, downloads, file listings, and Ping Hati signals.
+ * Handles HTTP REST API uploads, downloads, file listings, remote deletion, and Ping Hati signals.
  */
 object NetworkRelay {
 
@@ -158,7 +158,7 @@ object NetworkRelay {
     }
 
     /**
-     * Download Audio File from VPS to local storage
+     * Download Audio File from VPS to local storage and auto-clean remote file from VPS server
      */
     fun downloadAudioFile(vpsHost: String, myId: String, filename: String, destFile: File, onResult: (Boolean) -> Unit) {
         Thread {
@@ -177,6 +177,10 @@ object NetworkRelay {
                         }
                     }
                     conn.disconnect()
+
+                    // Extra safeguard: Confirm remote file deletion on server
+                    deleteRemoteFile(vpsHost, myId, filename) {}
+
                     mainHandler.post { onResult(true) }
                 } else {
                     conn.disconnect()
@@ -184,6 +188,28 @@ object NetworkRelay {
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
+                mainHandler.post { onResult(false) }
+            }
+        }.start()
+    }
+
+    /**
+     * Permanently delete a file from VPS server for my_id
+     */
+    fun deleteRemoteFile(vpsHost: String, myId: String, filename: String, onResult: (Boolean) -> Unit) {
+        Thread {
+            try {
+                val urlStr = "${normalizeHost(vpsHost)}/files/$myId/$filename"
+                val url = URL(urlStr)
+                val conn = (url.openConnection() as HttpURLConnection).apply {
+                    requestMethod = "DELETE"
+                    connectTimeout = 4000
+                    readTimeout = 4000
+                }
+                val code = conn.responseCode
+                conn.disconnect()
+                mainHandler.post { onResult(code == 200) }
+            } catch (e: Exception) {
                 mainHandler.post { onResult(false) }
             }
         }.start()

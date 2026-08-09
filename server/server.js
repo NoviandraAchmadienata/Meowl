@@ -1,6 +1,7 @@
 /**
  * 🐱 Meowl VPS Middleware Server
  * Node.js + Express.js REST API for Audio File Uploads, Downloads & Real-time Ping Signals
+ * Auto-cleans files from server after successful download to prevent ghost re-downloads.
  */
 
 const express = require('express');
@@ -112,7 +113,7 @@ app.post('/upload/:target_id', (req, res) => {
   }
 });
 
-// HTTP GET Download Audio file for my_id
+// HTTP GET Download Audio file for my_id (Auto-deletes from server upon completion)
 app.get('/download/:my_id/:filename', (req, res) => {
   const { my_id, filename } = req.params;
   const filePath = path.join(UPLOAD_BASE_DIR, my_id, filename);
@@ -126,6 +127,27 @@ app.get('/download/:my_id/:filename', (req, res) => {
   res.setHeader('Content-Type', 'audio/wav');
   const readStream = fs.createReadStream(filePath);
   readStream.pipe(res);
+
+  res.on('finish', () => {
+    if (fs.existsSync(filePath)) {
+      fs.unlink(filePath, (err) => {
+        if (!err) console.log(`[GET /download] File auto-cleaned from server after download: ${filename}`);
+      });
+    }
+  });
+});
+
+// HTTP DELETE File from server for my_id
+app.delete('/files/:my_id/:filename', (req, res) => {
+  const { my_id, filename } = req.params;
+  const filePath = path.join(UPLOAD_BASE_DIR, my_id, filename);
+
+  if (fs.existsSync(filePath)) {
+    fs.unlinkSync(filePath);
+    console.log(`[DELETE /files] File permanently deleted from server for ${my_id}: ${filename}`);
+    return res.status(200).json({ success: true });
+  }
+  res.status(200).json({ success: true, message: 'File already absent' });
 });
 
 // List Files for my_id

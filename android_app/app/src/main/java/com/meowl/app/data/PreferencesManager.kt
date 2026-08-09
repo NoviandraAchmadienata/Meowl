@@ -4,7 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 
 /**
- * SharedPreferences Manager for Meowl App Settings & Configuration.
+ * SharedPreferences Manager for Meowl App Settings, Hardcoded IP, and Theme Configuration.
  */
 class PreferencesManager(context: Context) {
 
@@ -19,8 +19,9 @@ class PreferencesManager(context: Context) {
         get() = prefs.getString("target_id", "partner_cat") ?: "partner_cat"
         set(value) = prefs.edit().putString("target_id", value).apply()
 
+    // Default Hardcoded VPS Server Address
     var vpsServerHost: String
-        get() = prefs.getString("vps_host", "139.59.220.150") ?: "139.59.220.150"
+        get() = prefs.getString("vps_host", "http://103.112.163.154:3000") ?: "http://103.112.163.154:3000"
         set(value) = prefs.edit().putString("vps_host", value).apply()
 
     var vpsServerPort: Int
@@ -34,6 +35,10 @@ class PreferencesManager(context: Context) {
     var casingTheme: String
         get() = prefs.getString("casing_theme", "Pink") ?: "Pink"
         set(value) = prefs.edit().putString("casing_theme", value).apply()
+
+    var isDarkMode: Boolean
+        get() = prefs.getBoolean("is_dark_mode", true)
+        set(value) = prefs.edit().putBoolean("is_dark_mode", value).apply()
 
     var isEphemeralEnabled: Boolean
         get() = prefs.getBoolean("ephemeral_enabled", true)

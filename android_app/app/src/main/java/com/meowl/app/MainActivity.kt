@@ -43,7 +43,7 @@ import java.util.Date
 import java.util.Locale
 
 enum class AppVisualState {
-    IDLE, RECORDING, PLAYING, PAUSED, PING
+    IDLE, RECORDING, PLAYING, PAUSED, PING, NOTIFY
 }
 
 class MainActivity : ComponentActivity() {
@@ -58,6 +58,7 @@ class MainActivity : ComponentActivity() {
     private var voicemailFiles by mutableStateOf(listOf<File>())
     private var playingFilePath by mutableStateOf<String?>(null)
     private var currentRecordingFile by mutableStateOf<File?>(null)
+    private var isDarkModeState by mutableStateOf(true)
 
     private val mainHandler = Handler(Looper.getMainLooper())
     private var syncRunnable: Runnable? = null
@@ -75,6 +76,7 @@ class MainActivity : ComponentActivity() {
         prefsManager = PreferencesManager(this)
         audioRecorder = AudioRecorder(this)
         audioPlayer = AudioPlayer(this)
+        isDarkModeState = prefsManager.isDarkMode
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
             requestPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
@@ -121,13 +123,23 @@ class MainActivity : ComponentActivity() {
                     NetworkRelay.checkIncomingFiles(host, myId) { remoteFiles ->
                         if (remoteFiles.isNotEmpty()) {
                             val localFolder = File(filesDir, "voicemails").apply { if (!exists()) mkdirs() }
+
                             for (remoteFile in remoteFiles) {
                                 val destFile = File(localFolder, remoteFile)
                                 if (!destFile.exists()) {
                                     NetworkRelay.downloadAudioFile(host, myId, remoteFile, destFile) { success ->
                                         if (success) {
                                             refreshVoicemailList()
-                                            MeowlCatWidgetProvider.updateAllWidgets(this@MainActivity, "IDLE", "ONLINE · READY", unreadCount)
+                                            
+                                            // Trigger NOTIFY OLED state for 4 seconds
+                                            visualState = AppVisualState.NOTIFY
+                                            Toast.makeText(this@MainActivity, "Pesan Voicemail Baru Masuk!", Toast.LENGTH_SHORT).show()
+                                            MeowlCatWidgetProvider.updateAllWidgets(this@MainActivity, "NOTIFY", "NEW MESSAGE", unreadCount)
+
+                                            mainHandler.postDelayed({
+                                                visualState = AppVisualState.IDLE
+                                                MeowlCatWidgetProvider.updateAllWidgets(this@MainActivity, "IDLE", "ONLINE · READY", unreadCount)
+                                            }, 4000)
                                         }
                                     }
                                 }
@@ -178,14 +190,31 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    /**
+     * Delete Voicemail permanently from both Local Storage and VPS Server
+     */
     private fun deleteVoicemail(file: File) {
+        val originalName = file.name
+            .replace("lama_", "baru_")
+            .replace("fav_", "baru_")
+
+        // 1. Delete file permanently from local storage
         if (file.exists() && file.delete()) {
             refreshVoicemailList()
             Toast.makeText(this, "Voicemail dihapus", Toast.LENGTH_SHORT).show()
+
+            // 2. Also ensure remote copy is deleted from VPS server so it never re-downloads
+            NetworkRelay.deleteRemoteFile(prefsManager.vpsServerHost, prefsManager.myId, originalName) {}
+            NetworkRelay.deleteRemoteFile(prefsManager.vpsServerHost, prefsManager.myId, file.name) {}
         }
     }
 
     private fun playSpecificVoicemail(file: File) {
+        if (!file.exists() || file.length() <= 0L) {
+            Toast.makeText(this, "File audio tidak valid", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         playingFilePath = file.absolutePath
         visualState = AppVisualState.PLAYING
         MeowlCatWidgetProvider.updateAllWidgets(this, "PLAYING", "PLAYING AUDIO", unreadCount)
@@ -233,6 +262,13 @@ class MainActivity : ComponentActivity() {
         var gainSlider by remember { mutableStateOf(prefsManager.speakerGain.toFloat()) }
         var themeColor by remember { mutableStateOf(prefsManager.casingTheme) }
 
+        // Dynamic Color Tokens for Light Mode vs Dark Mode
+        val appBgColor = if (isDarkModeState) Color(0xFF0D0F14) else Color(0xFFF3F4F6)
+        val panelBgColor = if (isDarkModeState) Color(0xFF1A1E2E) else Color(0xFFFFFFFF)
+        val textPrimaryColor = if (isDarkModeState) Color(0xFFF0F4FF) else Color(0xFF111827)
+        val textMutedColor = if (isDarkModeState) Color(0xFF6B7280) else Color(0xFF4B5563)
+        val cardBorderColor = if (isDarkModeState) Color(0x26FFFFFF) else Color(0x1F000000)
+
         val casingGradient = when (themeColor) {
             "Blue" -> listOf(Color(0xFFD6EAFF), Color(0xFFA0C4F0), Color(0xFF6090D0))
             "Purple" -> listOf(Color(0xFFEADBFF), Color(0xFFC4A0F0), Color(0xFF9060D0))
@@ -277,7 +313,7 @@ class MainActivity : ComponentActivity() {
 
         Surface(
             modifier = Modifier.fillMaxSize(),
-            color = Color(0xFF0D0F14)
+            color = appBgColor
         ) {
             Column(
                 modifier = Modifier
@@ -303,22 +339,45 @@ class MainActivity : ComponentActivity() {
                         Text(
                             text = "Aplikasi & Home Screen AppWidget",
                             fontSize = 10.sp,
-                            color = Color(0xFF6B7280)
+                            color = textMutedColor
                         )
                     }
 
-                    IconButton(
-                        onClick = { showSettingsDialog = true },
-                        modifier = Modifier
-                            .clip(CircleShape)
-                            .background(Color(0xFF1A1E2E))
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_settings),
-                            contentDescription = "Settings",
-                            tint = Color(0xFFF0F4FF),
-                            modifier = Modifier.size(18.dp)
-                        )
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                        // Light / Dark Theme Switch Button (Custom Vector Sun/Moon Icon - Zero Emojis)
+                        IconButton(
+                            onClick = {
+                                isDarkModeState = !isDarkModeState
+                                prefsManager.isDarkMode = isDarkModeState
+                            },
+                            modifier = Modifier
+                                .clip(CircleShape)
+                                .background(panelBgColor)
+                        ) {
+                            Icon(
+                                painter = painterResource(
+                                    id = if (isDarkModeState) R.drawable.ic_moon else R.drawable.ic_sun
+                                ),
+                                contentDescription = "Switch Theme",
+                                tint = if (isDarkModeState) Color(0xFF00F5FF) else Color(0xFFFBBF24),
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+
+                        // Settings Dialog Button
+                        IconButton(
+                            onClick = { showSettingsDialog = true },
+                            modifier = Modifier
+                                .clip(CircleShape)
+                                .background(panelBgColor)
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_settings),
+                                contentDescription = "Settings",
+                                tint = textPrimaryColor,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
                     }
                 }
 
@@ -369,7 +428,7 @@ class MainActivity : ComponentActivity() {
                             .background(Brush.linearGradient(casingGradient))
                             .border(
                                 3.dp,
-                                if (visualState == AppVisualState.PING) Color(0xFFFF6EB4) else Color(0x26FFFFFF),
+                                if (visualState == AppVisualState.PING) Color(0xFFFF6EB4) else cardBorderColor,
                                 RoundedCornerShape(48.dp)
                             ),
                         contentAlignment = Alignment.Center
@@ -511,6 +570,23 @@ class MainActivity : ComponentActivity() {
                                             modifier = Modifier.size((32 * heartScale).dp)
                                         )
                                     }
+                                    AppVisualState.NOTIFY -> {
+                                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                            Icon(
+                                                painter = painterResource(id = R.drawable.ic_history),
+                                                contentDescription = null,
+                                                tint = Color(0xFFFBBF24),
+                                                modifier = Modifier.size(22.dp)
+                                            )
+                                            Spacer(modifier = Modifier.height(2.dp))
+                                            Text(
+                                                text = "$unreadCount PESAN BARU",
+                                                color = Color(0xFFFBBF24),
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 10.sp
+                                            )
+                                        }
+                                    }
                                 }
                             }
 
@@ -565,7 +641,6 @@ class MainActivity : ComponentActivity() {
                                         refreshVoicemailList()
 
                                         if (recordedFile != null && recordedFile.exists()) {
-                                            // Upload Voicemail File to VPS
                                             NetworkRelay.uploadAudioFile(prefsManager.vpsServerHost, prefsManager.targetId, recordedFile) { success ->
                                                 if (success) {
                                                     Toast.makeText(this@MainActivity, "Pesan voicemail terkirim", Toast.LENGTH_SHORT).show()
@@ -670,8 +745,6 @@ class MainActivity : ComponentActivity() {
                                 Button(
                                     onClick = {
                                         visualState = AppVisualState.PING
-                                        
-                                        // Send Ping Signal to VPS REST API for target_id
                                         NetworkRelay.sendPing(prefsManager.vpsServerHost, prefsManager.targetId) { success ->
                                             if (success) {
                                                 Toast.makeText(this@MainActivity, "Ping terkirim", Toast.LENGTH_SHORT).show()
@@ -704,9 +777,9 @@ class MainActivity : ComponentActivity() {
                                         Toast.makeText(this@MainActivity, "Widget diperbarui", Toast.LENGTH_SHORT).show()
                                     },
                                     modifier = Modifier.weight(1.1f),
-                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1A1E2E))
+                                    colors = ButtonDefaults.buttonColors(containerColor = panelBgColor)
                                 ) {
-                                    Text("SYNC WIDGET", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 10.sp)
+                                    Text("SYNC WIDGET", color = textPrimaryColor, fontWeight = FontWeight.Bold, fontSize = 10.sp)
                                 }
                             }
                         }
@@ -719,7 +792,8 @@ class MainActivity : ComponentActivity() {
                         .fillMaxWidth()
                         .weight(1f)
                         .clip(RoundedCornerShape(16.dp))
-                        .background(Color(0xFF1A1E2E))
+                        .background(panelBgColor)
+                        .border(1.dp, cardBorderColor, RoundedCornerShape(16.dp))
                         .padding(12.dp)
                 ) {
                     Row(
@@ -731,14 +805,14 @@ class MainActivity : ComponentActivity() {
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_history),
                                 contentDescription = null,
-                                tint = Color(0xFF6B7280),
+                                tint = textMutedColor,
                                 modifier = Modifier.size(14.dp)
                             )
                             Text(
-                                text = "PESAN MASUK DARI PASANGAN (${voicemailFiles.size})",
+                                text = "PESAN MASUK (${voicemailFiles.size})",
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF6B7280)
+                                color = textMutedColor
                             )
                         }
                         Text(
@@ -758,7 +832,7 @@ class MainActivity : ComponentActivity() {
                                 .padding(vertical = 24.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text("Belum ada pesan masuk dari pasangan", color = Color(0xFF6B7280), fontSize = 11.sp)
+                            Text("Belum ada pesan masuk", color = textMutedColor, fontSize = 11.sp)
                         }
                     } else {
                         LazyColumn(
@@ -778,7 +852,7 @@ class MainActivity : ComponentActivity() {
                                             when {
                                                 isFav -> Color(0x33FF6EB4)
                                                 isNew -> Color(0x33FBBF24)
-                                                else -> Color(0x0FFFFFF)
+                                                else -> if (isDarkModeState) Color(0x0FFFFFF) else Color(0xFFF3F4F6)
                                             }
                                         )
                                         .padding(8.dp),
@@ -795,7 +869,7 @@ class MainActivity : ComponentActivity() {
                                             val badgeColor = when {
                                                 isFav -> Color(0xFFFF6EB4)
                                                 isNew -> Color(0xFFFBBF24)
-                                                else -> Color(0xFF6B7280)
+                                                else -> textMutedColor
                                             }
                                             Text(
                                                 text = badgeText,
@@ -811,7 +885,7 @@ class MainActivity : ComponentActivity() {
                                             } catch (e: Exception) {
                                                 file.name
                                             }
-                                            Text(dateStr, color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Medium)
+                                            Text(dateStr, color = textPrimaryColor, fontSize = 11.sp, fontWeight = FontWeight.Medium)
                                         }
                                     }
 
@@ -823,7 +897,7 @@ class MainActivity : ComponentActivity() {
                                             Icon(
                                                 painter = painterResource(id = R.drawable.ic_play),
                                                 contentDescription = "Play",
-                                                tint = if (isPlayingThis) Color(0xFF00F5FF) else Color.White,
+                                                tint = if (isPlayingThis) Color(0xFF00F5FF) else textPrimaryColor,
                                                 modifier = Modifier.size(12.dp)
                                             )
                                         }
@@ -835,7 +909,7 @@ class MainActivity : ComponentActivity() {
                                             Icon(
                                                 painter = painterResource(id = R.drawable.ic_star),
                                                 contentDescription = "Favorite",
-                                                tint = if (isFav) Color(0xFFFF6EB4) else Color(0xFF6B7280),
+                                                tint = if (isFav) Color(0xFFFF6EB4) else textMutedColor,
                                                 modifier = Modifier.size(12.dp)
                                             )
                                         }
@@ -862,7 +936,7 @@ class MainActivity : ComponentActivity() {
                 if (showSettingsDialog) {
                     AlertDialog(
                         onDismissRequest = { showSettingsDialog = false },
-                        title = { Text("Opsi Pengaturan Meowl", color = Color.White, fontWeight = FontWeight.Bold) },
+                        title = { Text("Opsi Pengaturan Meowl", color = textPrimaryColor, fontWeight = FontWeight.Bold) },
                         text = {
                             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                                 OutlinedTextField(
@@ -880,10 +954,37 @@ class MainActivity : ComponentActivity() {
                                 OutlinedTextField(
                                     value = vpsHostText,
                                     onValueChange = { vpsHostText = it },
-                                    label = { Text("VPS Server Address (cth: http://103.123.45.67:3000)") },
+                                    label = { Text("VPS Server Address") },
                                     modifier = Modifier.fillMaxWidth()
                                 )
-                                Text("Volume Speaker Gain: ${gainSlider.toInt()}%", color = Color.Gray, fontSize = 12.sp)
+
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text("Mode Tampilan:", color = textMutedColor, fontSize = 12.sp)
+                                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                        FilterChip(
+                                            selected = isDarkModeState,
+                                            onClick = {
+                                                isDarkModeState = true
+                                                prefsManager.isDarkMode = true
+                                            },
+                                            label = { Text("Gelap", fontSize = 10.sp) }
+                                        )
+                                        FilterChip(
+                                            selected = !isDarkModeState,
+                                            onClick = {
+                                                isDarkModeState = false
+                                                prefsManager.isDarkMode = false
+                                            },
+                                            label = { Text("Terang", fontSize = 10.sp) }
+                                        )
+                                    }
+                                }
+
+                                Text("Volume Speaker Gain: ${gainSlider.toInt()}%", color = textMutedColor, fontSize = 12.sp)
                                 Slider(
                                     value = gainSlider,
                                     onValueChange = { gainSlider = it },
@@ -894,7 +995,7 @@ class MainActivity : ComponentActivity() {
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Text("Tema Casing:", color = Color.Gray, fontSize = 12.sp)
+                                    Text("Tema Casing:", color = textMutedColor, fontSize = 12.sp)
                                     Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                                         listOf("Pink", "Blue", "Purple").forEach { color ->
                                             FilterChip(
@@ -927,10 +1028,10 @@ class MainActivity : ComponentActivity() {
                         },
                         dismissButton = {
                             TextButton(onClick = { showSettingsDialog = false }) {
-                                Text("Batal", color = Color.Gray)
+                                Text("Batal", color = textMutedColor)
                             }
                         },
-                        containerColor = Color(0xFF1A1E2E)
+                        containerColor = panelBgColor
                     )
                 }
             }

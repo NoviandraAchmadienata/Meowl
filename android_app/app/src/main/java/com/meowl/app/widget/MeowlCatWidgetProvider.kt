@@ -21,7 +21,7 @@ import java.util.Locale
 
 /**
  * Interactive Cat Eyes AppWidget Provider for Android Home Screen.
- * Connected via NetworkRelay HTTP REST API to real-time VPS backend.
+ * Fully synchronized with crash-free audio player and NOTIFY OLED incoming message display.
  */
 class MeowlCatWidgetProvider : AppWidgetProvider() {
 
@@ -89,6 +89,11 @@ class MeowlCatWidgetProvider : AppWidgetProvider() {
                 views.setViewVisibility(R.id.layout_sent_success, if (state == "SENT") View.VISIBLE else View.GONE)
                 views.setViewVisibility(R.id.layout_paused_bars, if (state == "PAUSED") View.VISIBLE else View.GONE)
                 views.setViewVisibility(R.id.img_ping_heart, if (state == "PING") View.VISIBLE else View.GONE)
+                views.setViewVisibility(R.id.layout_incoming_notify, if (state == "NOTIFY") View.VISIBLE else View.GONE)
+
+                if (state == "NOTIFY") {
+                    views.setTextViewText(R.id.txt_notify_label, "$unreadCount PESAN BARU")
+                }
 
                 // Dynamic Action Button Rows
                 val isRec = (state == "RECORDING")
@@ -177,7 +182,6 @@ class MeowlCatWidgetProvider : AppWidgetProvider() {
                 updateAllWidgets(context, "IDLE", "ONLINE · READY", 0)
             }
             ACTION_WIDGET_SEND_PING -> {
-                // Send Real Ping via NetworkRelay
                 NetworkRelay.sendPing(prefs.vpsServerHost, prefs.targetId) { success ->
                     if (success) {
                         Toast.makeText(context, "Ping terkirim", Toast.LENGTH_SHORT).show()

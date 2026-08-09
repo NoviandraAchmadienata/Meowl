@@ -35,12 +35,14 @@ drawable ic_heart
 drawable ic_history
 drawable ic_launcher_background
 drawable ic_launcher_foreground
+drawable ic_moon
 drawable ic_pause
 drawable ic_paw
 drawable ic_play
 drawable ic_settings
 drawable ic_star
 drawable ic_stop
+drawable ic_sun
 drawable ic_trash
 id btn_middle_dot
 id btn_widget_cancel
@@ -57,6 +59,7 @@ id img_idle_eyes_bitmap
 id img_ping_heart
 id img_widget_ear_left
 id img_widget_ear_right
+id layout_incoming_notify
 id layout_paused_bars
 id layout_playing_viz
 id layout_recording_wave
@@ -64,6 +67,7 @@ id layout_sent_success
 id layout_widget_normal_btns
 id layout_widget_play_btns
 id layout_widget_rec_btns
+id txt_notify_label
 id txt_sent_label
 id txt_unread_badge
 id txt_widget_title
