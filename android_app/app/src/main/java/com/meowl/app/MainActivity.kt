@@ -35,6 +35,7 @@ import androidx.core.content.ContextCompat
 import com.meowl.app.audio.AudioPlayer
 import com.meowl.app.audio.AudioRecorder
 import com.meowl.app.data.PreferencesManager
+import com.meowl.app.network.NetworkRelay
 import com.meowl.app.widget.MeowlCatWidgetProvider
 import java.io.File
 import java.text.SimpleDateFormat
@@ -59,6 +60,7 @@ class MainActivity : ComponentActivity() {
     private var currentRecordingFile by mutableStateOf<File?>(null)
 
     private val mainHandler = Handler(Looper.getMainLooper())
+    private var syncRunnable: Runnable? = null
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -79,16 +81,66 @@ class MainActivity : ComponentActivity() {
         }
 
         refreshVoicemailList()
+        startPeriodicVpsSync()
 
         setContent {
             MeowlDigitalAppUI()
         }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        syncRunnable?.let { mainHandler.removeCallbacks(it) }
+    }
+
     /**
-     * Refreshes the Inbox Voicemails received FROM PARTNER only.
-     * Sent voicemails (kirim_*.wav) are excluded because voicemails can only be listened to by the recipient!
+     * Periodic 5s Network Polling: Syncs incoming Pings and Voicemails from VPS
      */
+    private fun startPeriodicVpsSync() {
+        syncRunnable = object : Runnable {
+            override fun run() {
+                val host = prefsManager.vpsServerHost
+                val myId = prefsManager.myId
+
+                if (host.isNotEmpty() && myId.isNotEmpty() && visualState == AppVisualState.IDLE) {
+                    // 1. Check for incoming Heart Pings
+                    NetworkRelay.checkPing(host, myId) { hasPing ->
+                        if (hasPing) {
+                            visualState = AppVisualState.PING
+                            Toast.makeText(this@MainActivity, "Menerima Ping Hati dari Pasangan!", Toast.LENGTH_SHORT).show()
+                            MeowlCatWidgetProvider.updateAllWidgets(this@MainActivity, "PING", "PING RECEIVED!", unreadCount)
+                            
+                            mainHandler.postDelayed({
+                                visualState = AppVisualState.IDLE
+                                MeowlCatWidgetProvider.updateAllWidgets(this@MainActivity, "IDLE", "ONLINE · READY", unreadCount)
+                            }, 3000)
+                        }
+                    }
+
+                    // 2. Check for incoming Voicemails from VPS
+                    NetworkRelay.checkIncomingFiles(host, myId) { remoteFiles ->
+                        if (remoteFiles.isNotEmpty()) {
+                            val localFolder = File(filesDir, "voicemails").apply { if (!exists()) mkdirs() }
+                            for (remoteFile in remoteFiles) {
+                                val destFile = File(localFolder, remoteFile)
+                                if (!destFile.exists()) {
+                                    NetworkRelay.downloadAudioFile(host, myId, remoteFile, destFile) { success ->
+                                        if (success) {
+                                            refreshVoicemailList()
+                                            MeowlCatWidgetProvider.updateAllWidgets(this@MainActivity, "IDLE", "ONLINE · READY", unreadCount)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                mainHandler.postDelayed(this, 5000)
+            }
+        }
+        mainHandler.postDelayed(syncRunnable!!, 2000)
+    }
+
     private fun refreshVoicemailList() {
         val folder = File(filesDir, "voicemails").apply { if (!exists()) mkdirs() }
         val files = folder.listFiles()?.filter { 
@@ -508,10 +560,21 @@ class MainActivity : ComponentActivity() {
                             ) {
                                 Button(
                                     onClick = {
-                                        audioRecorder.stopRecording()
+                                        val recordedFile = audioRecorder.stopRecording()
                                         currentRecordingFile = null
                                         refreshVoicemailList()
-                                        Toast.makeText(this@MainActivity, "Pesan voicemail terkirim", Toast.LENGTH_SHORT).show()
+
+                                        if (recordedFile != null && recordedFile.exists()) {
+                                            // Upload Voicemail File to VPS
+                                            NetworkRelay.uploadAudioFile(prefsManager.vpsServerHost, prefsManager.targetId, recordedFile) { success ->
+                                                if (success) {
+                                                    Toast.makeText(this@MainActivity, "Pesan voicemail terkirim", Toast.LENGTH_SHORT).show()
+                                                } else {
+                                                    Toast.makeText(this@MainActivity, "Gagal mengunggah ke VPS", Toast.LENGTH_SHORT).show()
+                                                }
+                                            }
+                                        }
+
                                         MeowlCatWidgetProvider.updateAllWidgets(this@MainActivity, "SENT", "SENT SUCCESS", unreadCount)
                                         
                                         mainHandler.postDelayed({
@@ -586,7 +649,6 @@ class MainActivity : ComponentActivity() {
 
                                 Button(
                                     onClick = {
-                                        // Save as outgoing kirim_*.wav (excluded from sender's inbox history!)
                                         currentRecordingFile = audioRecorder.startRecording("kirim_${System.currentTimeMillis() / 1000}.wav")
                                         visualState = AppVisualState.RECORDING
                                         MeowlCatWidgetProvider.updateAllWidgets(this@MainActivity, "RECORDING", "RECORDING...", unreadCount)
@@ -608,7 +670,16 @@ class MainActivity : ComponentActivity() {
                                 Button(
                                     onClick = {
                                         visualState = AppVisualState.PING
-                                        Toast.makeText(this@MainActivity, "Ping terkirim", Toast.LENGTH_SHORT).show()
+                                        
+                                        // Send Ping Signal to VPS REST API for target_id
+                                        NetworkRelay.sendPing(prefsManager.vpsServerHost, prefsManager.targetId) { success ->
+                                            if (success) {
+                                                Toast.makeText(this@MainActivity, "Ping terkirim", Toast.LENGTH_SHORT).show()
+                                            } else {
+                                                Toast.makeText(this@MainActivity, "Gagal mengirim ping ke VPS", Toast.LENGTH_SHORT).show()
+                                            }
+                                        }
+
                                         MeowlCatWidgetProvider.updateAllWidgets(this@MainActivity, "PING", "PING SENT!", unreadCount)
                                         
                                         mainHandler.postDelayed({
@@ -642,7 +713,7 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                // INCOMING VOICEMAIL HISTORY & FAVORITES LIST PANEL (Only received from Partner)
+                // INCOMING VOICEMAIL HISTORY & FAVORITES LIST PANEL
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -809,7 +880,7 @@ class MainActivity : ComponentActivity() {
                                 OutlinedTextField(
                                     value = vpsHostText,
                                     onValueChange = { vpsHostText = it },
-                                    label = { Text("VPS Server Address") },
+                                    label = { Text("VPS Server Address (cth: http://103.123.45.67:3000)") },
                                     modifier = Modifier.fillMaxWidth()
                                 )
                                 Text("Volume Speaker Gain: ${gainSlider.toInt()}%", color = Color.Gray, fontSize = 12.sp)

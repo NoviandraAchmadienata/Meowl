@@ -1,6 +1,6 @@
 /**
  * 🐱 Meowl VPS Middleware Server
- * Node.js + Express.js REST API for Audio File Uploads & Downloads
+ * Node.js + Express.js REST API for Audio File Uploads, Downloads & Real-time Ping Signals
  */
 
 const express = require('express');
@@ -12,6 +12,9 @@ const cors    = require('cors');
 const app  = express();
 const PORT = process.env.PORT || 3000;
 const UPLOAD_BASE_DIR = path.join(__dirname, 'uploads');
+
+// Memory store for pending ping events: pingQueue[target_id] = timestamp
+const pingQueue = {};
 
 // Ensure base upload directory exists
 if (!fs.existsSync(UPLOAD_BASE_DIR)) {
@@ -55,9 +58,29 @@ app.get('/status', (req, res) => {
   });
 });
 
+// HTTP POST Send Ping Signal to target_id
+app.post('/ping/:target_id', (req, res) => {
+  const targetId = req.params.target_id;
+  const timestamp = Math.floor(Date.now() / 1000);
+  pingQueue[targetId] = timestamp;
+  console.log(`[POST /ping] Heart Ping sent to target: ${targetId} at ${timestamp}`);
+  res.status(200).json({ success: true, target_id: targetId, timestamp: timestamp });
+});
+
+// HTTP GET Check & Consume Pending Ping Signal for my_id
+app.get('/ping/:my_id', (req, res) => {
+  const myId = req.params.my_id;
+  if (pingQueue[myId]) {
+    const timestamp = pingQueue[myId];
+    delete pingQueue[myId]; // Consume ping once retrieved
+    console.log(`[GET /ping] Heart Ping delivered to ${myId}`);
+    return res.status(200).json({ ping: true, timestamp: timestamp });
+  }
+  res.status(200).json({ ping: false });
+});
+
 // HTTP POST Upload Audio file for target_id
 app.post('/upload/:target_id', (req, res) => {
-  // Support both Multipart Form and raw Octet-Stream/WAV body
   const contentType = req.headers['content-type'] || '';
   const targetId = req.params.target_id;
 

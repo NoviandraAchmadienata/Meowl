@@ -16,11 +16,12 @@ import com.meowl.app.R
 import com.meowl.app.audio.AudioPlayer
 import com.meowl.app.audio.AudioRecorder
 import com.meowl.app.data.PreferencesManager
+import com.meowl.app.network.NetworkRelay
 import java.util.Locale
 
 /**
  * Interactive Cat Eyes AppWidget Provider for Android Home Screen.
- * Fully synchronized with Asymmetric Voicemail Rules (Sent messages kirim_*.wav are sent to partner only).
+ * Connected via NetworkRelay HTTP REST API to real-time VPS backend.
  */
 class MeowlCatWidgetProvider : AppWidgetProvider() {
 
@@ -151,6 +152,8 @@ class MeowlCatWidgetProvider : AppWidgetProvider() {
 
     override fun onReceive(context: Context, intent: Intent) {
         super.onReceive(context, intent)
+        val prefs = PreferencesManager(context)
+
         when (intent.action) {
             ACTION_WIDGET_TAP_PLAY -> {
                 Toast.makeText(context, "Memutar voicemail...", Toast.LENGTH_SHORT).show()
@@ -174,7 +177,14 @@ class MeowlCatWidgetProvider : AppWidgetProvider() {
                 updateAllWidgets(context, "IDLE", "ONLINE · READY", 0)
             }
             ACTION_WIDGET_SEND_PING -> {
-                Toast.makeText(context, "Ping terkirim", Toast.LENGTH_SHORT).show()
+                // Send Real Ping via NetworkRelay
+                NetworkRelay.sendPing(prefs.vpsServerHost, prefs.targetId) { success ->
+                    if (success) {
+                        Toast.makeText(context, "Ping terkirim", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(context, "Gagal terhubung ke VPS", Toast.LENGTH_SHORT).show()
+                    }
+                }
                 updateAllWidgets(context, "PING", "PING SENT!", 0)
                 
                 mainHandler.postDelayed({
@@ -184,15 +194,24 @@ class MeowlCatWidgetProvider : AppWidgetProvider() {
             ACTION_WIDGET_RECORD_TOGGLE -> {
                 if (!isWidgetRecording) {
                     if (widgetRecorder == null) widgetRecorder = AudioRecorder(context)
-                    // Save as outgoing kirim_*.wav (excluded from sender's local inbox player!)
                     widgetRecorder?.startRecording("kirim_${System.currentTimeMillis() / 1000}.wav")
                     isWidgetRecording = true
                     Toast.makeText(context, "Merekam voicemail...", Toast.LENGTH_SHORT).show()
                     updateAllWidgets(context, "RECORDING", "RECORDING...", 0)
                 } else {
-                    widgetRecorder?.stopRecording()
+                    val recordedFile = widgetRecorder?.stopRecording()
                     isWidgetRecording = false
-                    Toast.makeText(context, "Pesan voicemail terkirim", Toast.LENGTH_SHORT).show()
+
+                    if (recordedFile != null && recordedFile.exists()) {
+                        NetworkRelay.uploadAudioFile(prefs.vpsServerHost, prefs.targetId, recordedFile) { success ->
+                            if (success) {
+                                Toast.makeText(context, "Pesan voicemail terkirim", Toast.LENGTH_SHORT).show()
+                            } else {
+                                Toast.makeText(context, "Gagal mengunggah ke VPS", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
+
                     updateAllWidgets(context, "SENT", "SENT SUCCESS", 0)
                     
                     mainHandler.postDelayed({
