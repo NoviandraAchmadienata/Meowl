@@ -68,4 +68,47 @@ class PreferencesManager(context: Context) {
             }
             return id!!
         }
+
+    // =============================================
+    // MODULAR LDR FEATURE SUITE TOGGLES
+    // =============================================
+    var enableDistanceCounter: Boolean
+        get() = prefs.getBoolean("ldr_distance_counter", true)
+        set(value) = prefs.edit().putBoolean("ldr_distance_counter", value).apply()
+
+    var meetupDateMillis: Long
+        get() = prefs.getLong("ldr_meetup_date_millis", 0L)
+        set(value) = prefs.edit().putLong("ldr_meetup_date_millis", value).apply()
+
+    var enableTimeCapsule: Boolean
+        get() = prefs.getBoolean("ldr_time_capsule", true)
+        set(value) = prefs.edit().putBoolean("ldr_time_capsule", value).apply()
+
+    var enableHeartbeatHug: Boolean
+        get() = prefs.getBoolean("ldr_heartbeat_hug", true)
+        set(value) = prefs.edit().putBoolean("ldr_heartbeat_hug", value).apply()
+
+    var enableMoodIndicator: Boolean
+        get() = prefs.getBoolean("ldr_mood_indicator", true)
+        set(value) = prefs.edit().putBoolean("ldr_mood_indicator", value).apply()
+
+    var myCurrentMood: String
+        get() = prefs.getString("ldr_my_mood", "HAPPY") ?: "HAPPY"
+        set(value) = prefs.edit().putString("ldr_my_mood", value).apply()
+
+    var partnerCurrentMood: String
+        get() = prefs.getString("ldr_partner_mood", "HAPPY") ?: "HAPPY"
+        set(value) = prefs.edit().putString("ldr_partner_mood", value).apply()
+
+    var enableDailyPrompt: Boolean
+        get() = prefs.getBoolean("ldr_daily_prompt", true)
+        set(value) = prefs.edit().putBoolean("ldr_daily_prompt", value).apply()
+
+    var enableVoiceReactions: Boolean
+        get() = prefs.getBoolean("ldr_voice_reactions", true)
+        set(value) = prefs.edit().putBoolean("ldr_voice_reactions", value).apply()
+
+    var enableMoodLight: Boolean
+        get() = prefs.getBoolean("ldr_mood_light", true)
+        set(value) = prefs.edit().putBoolean("ldr_mood_light", value).apply()
 }

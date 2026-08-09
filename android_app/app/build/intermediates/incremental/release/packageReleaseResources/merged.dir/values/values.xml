@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="amber_notify">#FBBF24</color>
+    <color name="bg_card">#1A1E2E</color>
+    <color name="bg_primary">#0D0F14</color>
+    <color name="cyan_eyes">#00F5FF</color>
+    <color name="green_status">#4ADE80</color>
+    <color name="muted_text">#6B7280</color>
+    <color name="pink_accent">#FF6EB4</color>
+    <color name="purple_upload">#B070FF</color>
+    <color name="red_record">#F87171</color>
+    <color name="white_text">#F0F4FF</color>
+    <string name="app_name">Meowl</string>
+    <string name="widget_description">Interactive Glowing Cat Eyes Voicemail Widget for Couples</string>
+    <string name="widget_name">Meowl Cat Eyes Widget</string>
+    <style name="Theme.MeowlApp" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:statusBarColor">@color/bg_primary</item>
+        <item name="android:navigationBarColor">@color/bg_primary</item>
+    </style>
+</resources>

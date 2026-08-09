@@ -38,7 +38,7 @@ object NetworkRelay {
     }
 
     /**
-     * Register/Claim ID on VPS server with Device UUID and local Timezone & City
+     * Register/Claim ID on VPS server with Device UUID, local Timezone, City & Mood
      */
     fun registerId(
         vpsHost: String,
@@ -46,6 +46,7 @@ object NetworkRelay {
         deviceId: String,
         timezone: String = java.util.TimeZone.getDefault().id,
         city: String = getAutoLocalCity(),
+        mood: String = "HAPPY",
         onResult: (Boolean, String?) -> Unit
     ) {
         Thread {
@@ -64,6 +65,7 @@ object NetworkRelay {
                     put("deviceId", deviceId)
                     put("timezone", timezone)
                     put("city", city)
+                    put("mood", mood)
                 }.toString()
 
                 conn.outputStream.use { it.write(payload.toByteArray(Charsets.UTF_8)) }
@@ -85,9 +87,9 @@ object NetworkRelay {
     }
 
     /**
-     * Fetch Partner's automatically detected Timezone & City from VPS
+     * Fetch Partner's automatically detected Timezone, City & Mood from VPS
      */
-    fun fetchPartnerInfo(vpsHost: String, partnerId: String, onResult: (String?, String?) -> Unit) {
+    fun fetchPartnerInfo(vpsHost: String, partnerId: String, onResult: (String?, String?, String?) -> Unit) {
         Thread {
             try {
                 val urlStr = "${normalizeHost(vpsHost)}/device-info/$partnerId"
@@ -103,13 +105,14 @@ object NetworkRelay {
                     val json = JSONObject(responseText)
                     val tz = json.optString("timezone", null)
                     val city = json.optString("city", null)
-                    mainHandler.post { onResult(tz, city) }
+                    val mood = json.optString("mood", null)
+                    mainHandler.post { onResult(tz, city, mood) }
                 } else {
                     conn.disconnect()
-                    mainHandler.post { onResult(null, null) }
+                    mainHandler.post { onResult(null, null, null) }
                 }
             } catch (e: Exception) {
-                mainHandler.post { onResult(null, null) }
+                mainHandler.post { onResult(null, null, null) }
             }
         }.start()
     }

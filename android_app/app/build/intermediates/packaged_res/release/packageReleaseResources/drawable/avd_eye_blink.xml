@@ -1,0 +1,28 @@
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt">
+    <aapt:attr name="android:drawable">
+        <vector
+            android:width="18dp"
+            android:height="30dp"
+            android:viewportWidth="18"
+            android:viewportHeight="30">
+            <path
+                android:name="eye_path"
+                android:fillColor="#00F5FF"
+                android:pathData="M 0,9 C 0,4 4,0 9,0 C 14,0 18,4 18,9 L 18,21 C 18,26 14,30 9,30 C 4,30 0,26 0,21 Z" />
+        </vector>
+    </aapt:attr>
+    <target android:name="eye_path">
+        <aapt:attr name="android:animation">
+            <objectAnimator
+                android:propertyName="pathData"
+                android:duration="300"
+                android:valueFrom="M 0,9 C 0,4 4,0 9,0 C 14,0 18,4 18,9 L 18,21 C 18,26 14,30 9,30 C 4,30 0,26 0,21 Z"
+                android:valueTo="M 0,14 C 0,13 4,13 9,13 C 14,13 18,13 18,14 L 18,16 C 18,17 14,17 9,17 C 4,17 0,17 0,16 Z"
+                android:valueType="pathType"
+                android:repeatCount="1"
+                android:repeatMode="reverse"
+                android:interpolator="@android:anim/accelerate_decelerate_interpolator" />
+        </aapt:attr>
+    </target>
+</animated-vector>

@@ -1,0 +1,7 @@
+com.meowl.app-updated_navigation_xml-0 C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\build\generated\updated_navigation_xml\release
+com.meowl.app-packageReleaseResources-1 C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\build\intermediates\incremental\release\packageReleaseResources\merged.dir
+com.meowl.app-packageReleaseResources-2 C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\build\intermediates\incremental\release\packageReleaseResources\stripped.dir
+com.meowl.app-release-3 C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\build\intermediates\merged_res\release\mergeReleaseResources
+com.meowl.app-main-4 C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\main\res
+com.meowl.app-release-5 C:\Users\Lenovo\Documents\GitHub\Meowl\android_app\app\src\release\res
+gradleHome-0 C:\Users\Lenovo\.gradle

@@ -18,7 +18,10 @@ import com.meowl.app.audio.AudioRecorder
 import com.meowl.app.data.PreferencesManager
 import com.meowl.app.network.NetworkRelay
 import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
+import java.util.TimeZone
 
 /**
  * Interactive Cat Eyes AppWidget Provider for Android Home Screen.
@@ -35,12 +38,14 @@ class MeowlCatWidgetProvider : AppWidgetProvider() {
         const val ACTION_WIDGET_RECORD_CANCEL = "com.meowl.app.ACTION_WIDGET_RECORD_CANCEL"
 
         var currentWidgetState: String = "IDLE"
-            private set
-        private var isWidgetRecording = false
-        private var isWidgetPlaying = false
-        private var widgetRecorder: AudioRecorder? = null
-        private var widgetPlayer: AudioPlayer? = null
+        var isWidgetPlaying: Boolean = false
+        var isWidgetRecording: Boolean = false
+        var widgetRecorder: AudioRecorder? = null
+        var widgetPlayer: AudioPlayer? = null
         private val mainHandler = Handler(Looper.getMainLooper())
+
+        var playbackStartBaseTime: Long = 0L
+        var pausedElapsedTime: Long = 0L
 
         fun updateAllWidgets(context: Context, state: String = "IDLE", statusMsg: String = "ONLINE · READY", unreadCount: Int = 0) {
             try {
@@ -80,31 +85,38 @@ class MeowlCatWidgetProvider : AppWidgetProvider() {
                 views.setImageViewResource(R.id.img_widget_ear_left, earLeftRes)
                 views.setImageViewResource(R.id.img_widget_ear_right, earRightRes)
 
-                // 2. Synchronize Title (with Partner City & Time) & Unread Badge
-                val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
-                sdf.timeZone = TimeZone.getTimeZone(prefs.partnerTimezone)
-                val partnerTimeStr = sdf.format(Date())
-
-                val widgetTitleText = if (prefs.partnerCity.isNotEmpty()) {
-                    "${prefs.myId.uppercase(Locale.getDefault())} • ${prefs.partnerCity.uppercase(Locale.getDefault())} $partnerTimeStr"
-                } else {
-                    prefs.myId.uppercase(Locale.getDefault())
-                }
-
-                views.setTextViewText(R.id.txt_widget_title, widgetTitleText)
+                // 2. Synchronize Title & Unread Badge
+                views.setTextViewText(R.id.txt_widget_title, prefs.myId.uppercase(Locale.getDefault()))
                 views.setTextViewText(
                     R.id.txt_unread_badge,
                     if (unreadCount > 0) "$unreadCount UNREAD" else "0 UNREAD"
                 )
 
+                // 3. Partner City & Partner Time Clock INSIDE OLED Screen Area
+                val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
+                sdf.timeZone = TimeZone.getTimeZone(prefs.partnerTimezone)
+                val partnerTimeStr = sdf.format(Date())
+
+                val distKm = com.meowl.app.utils.LdrLocationHelper.calculateDistanceKm(com.meowl.app.utils.CityLocationHelper.currentCityName, prefs.partnerCity)
+                val cityHeader = if (prefs.enableDistanceCounter && distKm > 0) "${distKm}KM • ${prefs.partnerCity.uppercase(Locale.getDefault())}" else if (prefs.partnerCity.isNotEmpty()) prefs.partnerCity.uppercase(Locale.getDefault()) else "PARTNER"
+
+                views.setTextViewText(R.id.txt_widget_partner_city, cityHeader)
+                views.setTextViewText(R.id.txt_widget_partner_time, partnerTimeStr)
+
                 // 3. Dynamic State Eye Visuals & Containers
                 views.setViewVisibility(R.id.flipper_idle_eyes, if (state == "IDLE") View.VISIBLE else View.GONE)
+                views.setViewVisibility(R.id.flipper_dizzy_eyes, if (state == "DIZZY") View.VISIBLE else View.GONE)
                 views.setViewVisibility(R.id.layout_recording_wave, if (state == "RECORDING") View.VISIBLE else View.GONE)
-                views.setViewVisibility(R.id.layout_playing_viz, if (state == "PLAYING") View.VISIBLE else View.GONE)
-                views.setViewVisibility(R.id.layout_sent_success, if (state == "SENT") View.VISIBLE else View.GONE)
+                views.setViewVisibility(R.id.layout_playing_viz, if (state == "PLAYING" || state == "PAUSED") View.VISIBLE else View.GONE)
+                views.setViewVisibility(R.id.flipper_viz, if (state == "PLAYING") View.VISIBLE else View.GONE)
                 views.setViewVisibility(R.id.layout_paused_bars, if (state == "PAUSED") View.VISIBLE else View.GONE)
+                views.setViewVisibility(R.id.layout_sent_success, if (state == "SENT") View.VISIBLE else View.GONE)
                 views.setViewVisibility(R.id.img_ping_heart, if (state == "PING") View.VISIBLE else View.GONE)
                 views.setViewVisibility(R.id.layout_incoming_notify, if (state == "NOTIFY") View.VISIBLE else View.GONE)
+
+                if (state == "DIZZY") {
+                    views.showNext(R.id.flipper_dizzy_eyes)
+                }
 
                 if (state == "NOTIFY") {
                     views.setTextViewText(R.id.txt_notify_label, "$unreadCount PESAN BARU")
@@ -127,9 +139,25 @@ class MeowlCatWidgetProvider : AppWidgetProvider() {
                 }
 
                 if (state == "PLAYING") {
-                    views.setChronometer(R.id.chrono_widget_play, android.os.SystemClock.elapsedRealtime(), "%s", true)
+                    if (playbackStartBaseTime == 0L) {
+                        if (pausedElapsedTime > 0L) {
+                            playbackStartBaseTime = android.os.SystemClock.elapsedRealtime() - pausedElapsedTime
+                        } else {
+                            playbackStartBaseTime = android.os.SystemClock.elapsedRealtime()
+                            pausedElapsedTime = 0L
+                        }
+                    }
+                    views.setChronometer(R.id.chrono_widget_play, playbackStartBaseTime, "%s", true)
                     views.showNext(R.id.flipper_viz)
+                } else if (state == "PAUSED") {
+                    if (playbackStartBaseTime > 0L) {
+                        pausedElapsedTime = android.os.SystemClock.elapsedRealtime() - playbackStartBaseTime
+                        playbackStartBaseTime = 0L
+                    }
+                    views.setChronometer(R.id.chrono_widget_play, android.os.SystemClock.elapsedRealtime() - pausedElapsedTime, "%s", false)
                 } else {
+                    playbackStartBaseTime = 0L
+                    pausedElapsedTime = 0L
                     views.setChronometer(R.id.chrono_widget_play, android.os.SystemClock.elapsedRealtime(), "%s", false)
                 }
 
@@ -199,6 +227,8 @@ class MeowlCatWidgetProvider : AppWidgetProvider() {
         private fun playWidgetQueue(context: Context, files: List<File>, index: Int) {
             if (index >= files.size || !isWidgetPlaying) {
                 isWidgetPlaying = false
+                playbackStartBaseTime = 0L
+                pausedElapsedTime = 0L
                 widgetPlayer?.stopAudio()
                 mainHandler.post {
                     val remainingUnread = getAllUnreadVoicemails(context).size
@@ -294,6 +324,8 @@ class MeowlCatWidgetProvider : AppWidgetProvider() {
             ACTION_WIDGET_STOP_PLAY -> {
                 widgetPlayer?.stopAudio()
                 isWidgetPlaying = false
+                playbackStartBaseTime = 0L
+                pausedElapsedTime = 0L
                 Toast.makeText(context, "Pemutaran dihentikan", Toast.LENGTH_SHORT).show()
                 updateAllWidgets(context, "IDLE", "ONLINE · READY", 0)
             }

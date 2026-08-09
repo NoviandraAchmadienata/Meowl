@@ -8,10 +8,12 @@
         android:minSdkVersion="26"
         android:targetSdkVersion="34" />
 
-    <!-- Permissions required for Voicemail, Foreground Service & Widget networking -->
+    <!-- Permissions required for Voicemail, Location, Foreground Service & Widget networking -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.VIBRATE" />

@@ -77,6 +77,36 @@
             android:background="@drawable/bg_oled_screen"
             android:padding="4dp">
 
+            <!-- Top Overlay Header Inside OLED Screen: Partner City & Partner Time -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:orientation="horizontal"
+                android:paddingStart="4dp"
+                android:paddingEnd="4dp"
+                android:paddingTop="2dp">
+
+                <TextView
+                    android:id="@+id/txt_widget_partner_city"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="TOKYO"
+                    android:textColor="#CC00F5FF"
+                    android:textSize="7sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/txt_widget_partner_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="23:55"
+                    android:textColor="#CC00F5FF"
+                    android:textSize="7sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
             <!-- 1. STATE IDLE: Ultra-Fluid Seamless Gaze-Sliding & Eased Multi-Expression ViewFlipper (200ms Resolution) -->
             <ViewFlipper
                 android:id="@+id/flipper_idle_eyes"
@@ -162,7 +192,77 @@
 
                 <!-- Stage 17: Post-Wink Open Gaze Hold (2.0s = 10 frames) -->
                 <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center"><ImageView android:layout_width="18dp" android:layout_height="30dp" android:layout_marginEnd="16dp" android:src="@drawable/bg_cyan_eye" /><ImageView android:layout_width="18dp" android:layout_height="30dp" android:src="@drawable/bg_cyan_eye" /></LinearLayout>
-                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center"><ImageView android:layout_width="18dp" android:layout_height="30dp" android:layout_marginEnd="16dp" android:src="@drawable/bg_cyan_eye" /><ImageView android:layout_width="18dp" android:layout_height="30dp" android:src="@drawable/bg_cyan_eye" /></LinearLayout>
+            </ViewFlipper>
+
+            <!-- 1B. STATE DIZZY: Spinning Dizzy Pupil Eyes ViewFlipper (Matches App Dizzy Animation) -->
+            <ViewFlipper
+                android:id="@+id/flipper_dizzy_eyes"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:autoStart="true"
+                android:flipInterval="100"
+                android:visibility="gone">
+
+                <!-- Frame 1: Left Pupil TOP, Right Pupil BOTTOM -->
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center">
+                    <FrameLayout android:layout_width="24dp" android:layout_height="24dp" android:layout_marginEnd="16dp" android:background="@drawable/bg_dizzy_eye_circle">
+                        <ImageView android:layout_width="7dp" android:layout_height="7dp" android:layout_gravity="top|center_horizontal" android:src="@drawable/bg_dizzy_pupil" />
+                    </FrameLayout>
+                    <FrameLayout android:layout_width="24dp" android:layout_height="24dp" android:background="@drawable/bg_dizzy_eye_circle">
+                        <ImageView android:layout_width="7dp" android:layout_height="7dp" android:layout_gravity="bottom|center_horizontal" android:src="@drawable/bg_dizzy_pupil" />
+                    </FrameLayout>
+                </LinearLayout>
+
+                <!-- Frame 2: Left Pupil TOP-RIGHT, Right Pupil BOTTOM-LEFT -->
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center">
+                    <FrameLayout android:layout_width="24dp" android:layout_height="24dp" android:layout_marginEnd="16dp" android:background="@drawable/bg_dizzy_eye_circle">
+                        <ImageView android:layout_width="7dp" android:layout_height="7dp" android:layout_gravity="top|end" android:src="@drawable/bg_dizzy_pupil" />
+                    </FrameLayout>
+                    <FrameLayout android:layout_width="24dp" android:layout_height="24dp" android:background="@drawable/bg_dizzy_eye_circle">
+                        <ImageView android:layout_width="7dp" android:layout_height="7dp" android:layout_gravity="bottom|start" android:src="@drawable/bg_dizzy_pupil" />
+                    </FrameLayout>
+                </LinearLayout>
+
+                <!-- Frame 3: Left Pupil RIGHT, Right Pupil LEFT -->
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center">
+                    <FrameLayout android:layout_width="24dp" android:layout_height="24dp" android:layout_marginEnd="16dp" android:background="@drawable/bg_dizzy_eye_circle">
+                        <ImageView android:layout_width="7dp" android:layout_height="7dp" android:layout_gravity="center_vertical|end" android:src="@drawable/bg_dizzy_pupil" />
+                    </FrameLayout>
+                    <FrameLayout android:layout_width="24dp" android:layout_height="24dp" android:background="@drawable/bg_dizzy_eye_circle">
+                        <ImageView android:layout_width="7dp" android:layout_height="7dp" android:layout_gravity="center_vertical|start" android:src="@drawable/bg_dizzy_pupil" />
+                    </FrameLayout>
+                </LinearLayout>
+
+                <!-- Frame 4: Left Pupil BOTTOM-RIGHT, Right Pupil TOP-LEFT -->
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center">
+                    <FrameLayout android:layout_width="24dp" android:layout_height="24dp" android:layout_marginEnd="16dp" android:background="@drawable/bg_dizzy_eye_circle">
+                        <ImageView android:layout_width="7dp" android:layout_height="7dp" android:layout_gravity="bottom|end" android:src="@drawable/bg_dizzy_pupil" />
+                    </FrameLayout>
+                    <FrameLayout android:layout_width="24dp" android:layout_height="24dp" android:background="@drawable/bg_dizzy_eye_circle">
+                        <ImageView android:layout_width="7dp" android:layout_height="7dp" android:layout_gravity="top|start" android:src="@drawable/bg_dizzy_pupil" />
+                    </FrameLayout>
+                </LinearLayout>
+
+                <!-- Frame 5: Left Pupil BOTTOM, Right Pupil TOP -->
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center">
+                    <FrameLayout android:layout_width="24dp" android:layout_height="24dp" android:layout_marginEnd="16dp" android:background="@drawable/bg_dizzy_eye_circle">
+                        <ImageView android:layout_width="7dp" android:layout_height="7dp" android:layout_gravity="bottom|center_horizontal" android:src="@drawable/bg_dizzy_pupil" />
+                    </FrameLayout>
+                    <FrameLayout android:layout_width="24dp" android:layout_height="24dp" android:background="@drawable/bg_dizzy_eye_circle">
+                        <ImageView android:layout_width="7dp" android:layout_height="7dp" android:layout_gravity="top|center_horizontal" android:src="@drawable/bg_dizzy_pupil" />
+                    </FrameLayout>
+                </LinearLayout>
+
+                <!-- Frame 6: Left Pupil LEFT, Right Pupil RIGHT -->
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center">
+                    <FrameLayout android:layout_width="24dp" android:layout_height="24dp" android:layout_marginEnd="16dp" android:background="@drawable/bg_dizzy_eye_circle">
+                        <ImageView android:layout_width="7dp" android:layout_height="7dp" android:layout_gravity="center_vertical|start" android:src="@drawable/bg_dizzy_pupil" />
+                    </FrameLayout>
+                    <FrameLayout android:layout_width="24dp" android:layout_height="24dp" android:background="@drawable/bg_dizzy_eye_circle">
+                        <ImageView android:layout_width="7dp" android:layout_height="7dp" android:layout_gravity="center_vertical|end" android:src="@drawable/bg_dizzy_pupil" />
+                    </FrameLayout>
+                </LinearLayout>
             </ViewFlipper>
 
             <!-- 2. STATE RECORDING: Pulsing Red Dot + 7 Waveform Bars -->
@@ -351,6 +451,27 @@
                         <ImageView android:layout_width="5dp" android:layout_height="14dp" android:src="@drawable/bg_btn_play" android:contentDescription="v5"/>
                     </LinearLayout>
                 </ViewFlipper>
+
+                <!-- 5. STATE PAUSED: Double Pause Bars || Under Chronometer -->
+                <LinearLayout
+                    android:id="@+id/layout_paused_bars"
+                    android:layout_width="wrap_content"
+                    android:layout_height="22dp"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="5dp"
+                        android:layout_height="18dp"
+                        android:layout_marginEnd="6dp"
+                        android:background="@drawable/bg_btn_ping" />
+
+                    <TextView
+                        android:layout_width="5dp"
+                        android:layout_height="18dp"
+                        android:background="@drawable/bg_btn_ping" />
+                </LinearLayout>
             </LinearLayout>
 
             <!-- 4. STATE SENT / SUCCESS CONFIRMATION DISPLAY -->
@@ -377,28 +498,6 @@
                     android:textColor="#4ADE80"
                     android:textSize="10sp"
                     android:textStyle="bold" />
-            </LinearLayout>
-
-            <!-- 5. STATE PAUSED: Double Pause Bars || -->
-            <LinearLayout
-                android:id="@+id/layout_paused_bars"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerInParent="true"
-                android:orientation="horizontal"
-                android:gravity="center"
-                android:visibility="gone">
-
-                <TextView
-                    android:layout_width="6dp"
-                    android:layout_height="22dp"
-                    android:layout_marginEnd="8dp"
-                    android:background="@drawable/bg_oled_screen" />
-
-                <TextView
-                    android:layout_width="6dp"
-                    android:layout_height="22dp"
-                    android:background="@drawable/bg_oled_screen" />
             </LinearLayout>
 
             <!-- 6. STATE PING: Heartbeat Icon -->

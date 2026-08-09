@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Group centered & scaled for 108dp adaptive launcher icon grid -->
+    <group
+        android:pivotX="54"
+        android:pivotY="54"
+        android:scaleX="0.9"
+        android:scaleY="0.9">
+
+        <!-- 1. LEFT & RIGHT CAT EARS (Top Triangles) -->
+        <!-- Left Ear -->
+        <path
+            android:fillColor="#FFB3CB"
+            android:pathData="M 33,32 L 43,18 L 48,32 Z" />
+        <path
+            android:fillColor="#FF88AA"
+            android:pathData="M 36,32 L 43,23 L 46,32 Z" />
+
+        <!-- Right Ear -->
+        <path
+            android:fillColor="#FFB3CB"
+            android:pathData="M 60,32 L 65,18 L 75,32 Z" />
+        <path
+            android:fillColor="#FF88AA"
+            android:pathData="M 62,32 L 65,23 L 72,32 Z" />
+
+        <!-- 2. CAT ENCLOSURE CASING (Pink Squircle Body) -->
+        <path
+            android:fillColor="#FF6EB4"
+            android:pathData="M 30,30 H 78 A 18,18 0 0 1 96,48 V 70 A 18,18 0 0 1 78,88 H 30 A 18,18 0 0 1 12,70 V 48 A 18,18 0 0 1 30,30 Z" />
+
+        <!-- Highlight Overlay Gradient Effect -->
+        <path
+            android:fillColor="#FF99C8"
+            android:pathData="M 30,30 H 78 A 18,18 0 0 1 96,48 V 52 H 12 V 48 A 18,18 0 0 1 30,30 Z" />
+
+        <!-- 3. SIDE PTT PAW TAB (Right Hand Side) -->
+        <path
+            android:fillColor="#D48090"
+            android:pathData="M 96,52 H 100 A 3,3 0 0 1 103,55 V 65 A 3,3 0 0 1 100,68 H 96 Z" />
+
+        <!-- 4. OLED SCREEN CONTAINER (Black Center Box) -->
+        <path
+            android:fillColor="#000000"
+            android:pathData="M 30,42 H 78 A 6,6 0 0 1 84,48 V 66 A 6,6 0 0 1 78,72 H 30 A 6,6 0 0 1 24,66 V 48 A 6,6 0 0 1 30,42 Z" />
+        <path
+            android:fillColor="#1A1A1A"
+            android:strokeColor="#2A2A2A"
+            android:strokeWidth="1"
+            android:pathData="M 32,44 H 76 A 4,4 0 0 1 80,48 V 64 A 4,4 0 0 1 76,68 H 32 A 4,4 0 0 1 28,64 V 48 A 4,4 0 0 1 32,44 Z" />
+
+        <!-- 5. OLED CYAN EYES (Glowing Cyan Pill Shapes) -->
+        <!-- Left Eye -->
+        <path
+            android:fillColor="#00F5FF"
+            android:pathData="M 40,49 H 46 A 4,4 0 0 1 50,53 V 59 A 4,4 0 0 1 46,63 H 40 A 4,4 0 0 1 36,59 V 53 A 4,4 0 0 1 40,49 Z" />
+
+        <!-- Right Eye -->
+        <path
+            android:fillColor="#00F5FF"
+            android:pathData="M 62,49 H 68 A 4,4 0 0 1 72,53 V 59 A 4,4 0 0 1 68,63 H 62 A 4,4 0 0 1 58,59 V 53 A 4,4 0 0 1 62,49 Z" />
+
+        <!-- 6. WHISKERS (Left & Right Whiskers) -->
+        <!-- Left Whiskers -->
+        <path
+            android:strokeColor="#FFFFFF"
+            android:strokeWidth="1.5"
+            android:strokeLineCap="round"
+            android:pathData="M 12,52 L 22,54" />
+        <path
+            android:strokeColor="#FFFFFF"
+            android:strokeWidth="1.5"
+            android:strokeLineCap="round"
+            android:pathData="M 10,60 L 22,59" />
+
+        <!-- Right Whiskers -->
+        <path
+            android:strokeColor="#FFFFFF"
+            android:strokeWidth="1.5"
+            android:strokeLineCap="round"
+            android:pathData="M 86,54 L 96,52" />
+        <path
+            android:strokeColor="#FFFFFF"
+            android:strokeWidth="1.5"
+            android:strokeLineCap="round"
+            android:pathData="M 86,59 L 98,60" />
+
+        <!-- 7. SPEAKER GRILL LINES (Bottom Center) -->
+        <path
+            android:strokeColor="#B45064"
+            android:strokeWidth="1.5"
+            android:strokeLineCap="round"
+            android:pathData="M 46,80 V 83 M 50,80 V 83 M 54,80 V 83 M 58,80 V 83 M 62,80 V 83" />
+
+    </group>
+</vector>

@@ -80,9 +80,9 @@ app.get('/status', (req, res) => {
   });
 });
 
-// HTTP POST Register/Claim ID (with Timezone & City Auto-Sync)
+// HTTP POST Register/Claim ID (with Timezone, City & Mood Auto-Sync)
 app.post('/register-id', (req, res) => {
-  const { id, deviceId, timezone, city } = req.body || {};
+  const { id, deviceId, timezone, city, mood } = req.body || {};
 
   if (!id || !deviceId) {
     return res.status(400).json({ success: false, error: 'ID dan Device ID wajib diisi' });
@@ -109,21 +109,23 @@ app.post('/register-id', (req, res) => {
     deviceId: cleanDeviceId,
     timezone: timezone || 'Asia/Jakarta',
     city: city || 'JAKARTA',
+    mood: mood || 'HAPPY',
     lastSeen: new Date().toISOString(),
     registeredAt: registry[cleanId]?.registeredAt || new Date().toISOString()
   };
   saveRegisteredIds(registry);
 
-  console.log(`[POST /register-id] Registered ID "${cleanId}" (${city}, ${timezone}) for device: ${cleanDeviceId}`);
+  console.log(`[POST /register-id] Registered ID "${cleanId}" (${city}, ${timezone}, Mood: ${registry[cleanId].mood}) for device: ${cleanDeviceId}`);
   res.status(200).json({
     success: true,
     message: 'ID berhasil didaftarkan',
     timezone: registry[cleanId].timezone,
-    city: registry[cleanId].city
+    city: registry[cleanId].city,
+    mood: registry[cleanId].mood
   });
 });
 
-// HTTP GET Device Info (Automatic Timezone & City for Partner)
+// HTTP GET Device Info (Automatic Timezone, City & Mood for Partner)
 app.get('/device-info/:id', (req, res) => {
   const cleanId = req.params.id.trim();
   const registry = loadRegisteredIds();
@@ -133,7 +135,8 @@ app.get('/device-info/:id', (req, res) => {
       success: true,
       id: cleanId,
       timezone: registry[cleanId].timezone || 'Asia/Jakarta',
-      city: registry[cleanId].city || 'JAKARTA'
+      city: registry[cleanId].city || 'JAKARTA',
+      mood: registry[cleanId].mood || 'HAPPY'
     });
   } else {
     res.status(404).json({ success: false, error: 'Target device belum terdaftar' });

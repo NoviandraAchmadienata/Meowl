@@ -7,8 +7,13 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.os.Build
 import android.os.IBinder
+import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
 import androidx.core.app.NotificationCompat
@@ -34,6 +39,56 @@ class MeowlRelayService : Service() {
     private val serviceJob = Job()
     private val serviceScope = CoroutineScope(Dispatchers.IO + serviceJob)
     private var isPolling = false
+
+    private var sensorManager: SensorManager? = null
+    private var accelerometer: Sensor? = null
+    private var lastShakeTime: Long = 0L
+
+    private val sensorListener = object : SensorEventListener {
+        override fun onSensorChanged(event: SensorEvent?) {
+            if (event?.sensor?.type == Sensor.TYPE_ACCELEROMETER) {
+                val x = event.values[0]
+                val y = event.values[1]
+                val z = event.values[2]
+
+                val gForce = Math.sqrt((x * x + y * y + z * z).toDouble()) / SensorManager.GRAVITY_EARTH
+                val now = System.currentTimeMillis()
+
+                if (gForce > 2.4 && (now - lastShakeTime > 1200L)) {
+                    lastShakeTime = now
+                    triggerWidgetDizzyState()
+                }
+            }
+        }
+
+        override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+    }
+
+    private fun triggerWidgetDizzyState() {
+        val currentState = MeowlCatWidgetProvider.currentWidgetState
+        if (currentState == "RECORDING" || currentState == "PLAYING") return
+
+        val unreadCount = getUnreadVoicemailCount()
+        MeowlCatWidgetProvider.updateAllWidgets(applicationContext, "DIZZY", "DIZZY ~ MEOWL", unreadCount)
+
+        try {
+            val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                vibrator?.vibrate(VibrationEffect.createOneShot(180, VibrationEffect.DEFAULT_AMPLITUDE))
+            } else {
+                @Suppress("DEPRECATION")
+                vibrator?.vibrate(180)
+            }
+        } catch (e: Exception) {}
+
+        serviceScope.launch {
+            delay(3500)
+            if (MeowlCatWidgetProvider.currentWidgetState == "DIZZY") {
+                val latestUnread = getUnreadVoicemailCount()
+                MeowlCatWidgetProvider.updateAllWidgets(applicationContext, "IDLE", "ONLINE · READY", latestUnread)
+            }
+        }
+    }
 
     companion object {
         private const val CHANNEL_ID = "meowl_relay_channel"
@@ -68,6 +123,12 @@ class MeowlRelayService : Service() {
                 )
             } else {
                 startForeground(FOREGROUND_NOTIFICATION_ID, notification)
+            }
+
+            sensorManager = getSystemService(Context.SENSOR_SERVICE) as? SensorManager
+            accelerometer = sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+            accelerometer?.let {
+                sensorManager?.registerListener(sensorListener, it, SensorManager.SENSOR_DELAY_UI)
             }
         } catch (e: Throwable) {
             e.printStackTrace()
@@ -131,6 +192,9 @@ class MeowlRelayService : Service() {
                             if (success && destFile.length() > 0L) {
                                 val updatedUnread = getUnreadVoicemailCount()
                                 showVoicemailNotification(updatedUnread)
+
+                                // Broadcast to MainActivity to automatically refresh inbox UI list & trigger NOTIFY state
+                                sendBroadcast(Intent("com.meowl.app.ACTION_NEW_VOICEMAIL_DOWNLOADED"))
 
                                 // Only switch widget to NOTIFY if currently IDLE or NOTIFY (never disrupt RECORD / PLAY!)
                                 if (currentWidgetState == "IDLE" || currentWidgetState == "NOTIFY") {
@@ -266,6 +330,7 @@ class MeowlRelayService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        sensorManager?.unregisterListener(sensorListener)
         serviceJob.cancel()
         isPolling = false
     }

@@ -1,13 +1,25 @@
 package com.meowl.app
 
 import android.Manifest
+import android.content.BroadcastReceiver
 import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.widget.Toast
+import com.meowl.app.utils.CityLocationHelper
+import com.meowl.app.utils.LdrLocationHelper
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -47,7 +59,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 
 enum class AppVisualState {
-    IDLE, RECORDING, PLAYING, PAUSED, PING, NOTIFY
+    IDLE, RECORDING, PLAYING, PAUSED, PING, NOTIFY, DIZZY
 }
 
 class MainActivity : ComponentActivity() {
@@ -65,6 +77,73 @@ class MainActivity : ComponentActivity() {
     private var isDarkModeState by mutableStateOf(true)
     private var incomingConnectRequesterId by mutableStateOf<String?>(null)
 
+    // LDR Feature Suite States (Toggleable)
+    private var enableDistanceCounterState by mutableStateOf(true)
+    private var enableTimeCapsuleState by mutableStateOf(true)
+    private var enableHeartbeatHugState by mutableStateOf(true)
+    private var enableMoodIndicatorState by mutableStateOf(true)
+    private var myCurrentMoodState by mutableStateOf("HAPPY")
+    private var partnerCurrentMoodState by mutableStateOf("HAPPY")
+    private var enableDailyPromptState by mutableStateOf(true)
+    private var enableVoiceReactionsState by mutableStateOf(true)
+    private var enableMoodLightState by mutableStateOf(true)
+
+    // Motion & Shake Physics Eyes
+    private var sensorManager: SensorManager? = null
+    private var accelerometer: Sensor? = null
+    private var lastShakeTime: Long = 0L
+    private var shakeOffsetX by mutableStateOf(0f)
+    private var shakeOffsetY by mutableStateOf(0f)
+
+    private val sensorListener = object : SensorEventListener {
+        override fun onSensorChanged(event: SensorEvent?) {
+            if (event?.sensor?.type == Sensor.TYPE_ACCELEROMETER) {
+                val x = event.values[0]
+                val y = event.values[1]
+                val z = event.values[2]
+
+                // Dynamic eye tilt offset following phone shake/tilt
+                shakeOffsetX = (-x * 2.5f).coerceIn(-18f, 18f)
+                shakeOffsetY = (y * 2.0f).coerceIn(-10f, 10f)
+
+                val gForce = Math.sqrt((x * x + y * y + z * z).toDouble()) / SensorManager.GRAVITY_EARTH
+                val now = System.currentTimeMillis()
+
+                if (gForce > 2.3 && (now - lastShakeTime > 1200L)) {
+                    lastShakeTime = now
+                    triggerDizzyState()
+                }
+            }
+        }
+
+        override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+    }
+
+    private fun triggerDizzyState() {
+        if (visualState == AppVisualState.RECORDING || visualState == AppVisualState.PLAYING) return
+
+        visualState = AppVisualState.DIZZY
+        Toast.makeText(this, "Aww Meowl Pusing! ~", Toast.LENGTH_SHORT).show()
+        MeowlCatWidgetProvider.updateAllWidgets(this, "DIZZY", "DIZZY ~ MEOWL", unreadCount)
+
+        try {
+            val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                vibrator?.vibrate(VibrationEffect.createOneShot(200, VibrationEffect.DEFAULT_AMPLITUDE))
+            } else {
+                @Suppress("DEPRECATION")
+                vibrator?.vibrate(200)
+            }
+        } catch (e: Exception) {}
+
+        mainHandler.postDelayed({
+            if (visualState == AppVisualState.DIZZY) {
+                visualState = AppVisualState.IDLE
+                MeowlCatWidgetProvider.updateAllWidgets(this, "IDLE", "ONLINE · READY", unreadCount)
+            }
+        }, 3500)
+    }
+
     private val mainHandler = Handler(Looper.getMainLooper())
     private var syncRunnable: Runnable? = null
 
@@ -75,6 +154,24 @@ class MainActivity : ComponentActivity() {
         if (!micGranted) {
             Toast.makeText(this, "Izin Mikrofon diperlukan untuk voicemail", Toast.LENGTH_LONG).show()
         }
+
+        // Auto-detect city as soon as location permission is granted by user!
+        val fineLocationGranted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] ?: false
+        val coarseLocationGranted = permissions[Manifest.permission.ACCESS_COARSE_LOCATION] ?: false
+        if (fineLocationGranted || coarseLocationGranted) {
+            CityLocationHelper.detectLocalCity(this) { detectedCity ->
+                val host = prefsManager.vpsServerHost
+                val myId = prefsManager.myId
+                if (host.isNotEmpty() && myId.isNotEmpty()) {
+                    NetworkRelay.registerId(
+                        vpsHost = host,
+                        myId = myId,
+                        deviceId = prefsManager.deviceId,
+                        city = detectedCity
+                    ) { _, _ -> }
+                }
+            }
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -84,7 +181,21 @@ class MainActivity : ComponentActivity() {
         audioPlayer = AudioPlayer(this)
         isDarkModeState = prefsManager.isDarkMode
 
-        val permissionsToRequest = mutableListOf(Manifest.permission.RECORD_AUDIO)
+        enableDistanceCounterState = prefsManager.enableDistanceCounter
+        enableTimeCapsuleState = prefsManager.enableTimeCapsule
+        enableHeartbeatHugState = prefsManager.enableHeartbeatHug
+        enableMoodIndicatorState = prefsManager.enableMoodIndicator
+        myCurrentMoodState = prefsManager.myCurrentMood
+        partnerCurrentMoodState = prefsManager.partnerCurrentMood
+        enableDailyPromptState = prefsManager.enableDailyPrompt
+        enableVoiceReactionsState = prefsManager.enableVoiceReactions
+        enableMoodLightState = prefsManager.enableMoodLight
+
+        val permissionsToRequest = mutableListOf(
+            Manifest.permission.RECORD_AUDIO,
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        )
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
                 permissionsToRequest.add(Manifest.permission.POST_NOTIFICATIONS)
@@ -103,9 +214,66 @@ class MainActivity : ComponentActivity() {
         startPeriodicVpsSync()
         com.meowl.app.network.MeowlRelayService.startService(this)
 
+        // Intelligent Auto-Detect Real City Location & Auto-Register to VPS
+        CityLocationHelper.detectLocalCity(this) { detectedCity ->
+            val host = prefsManager.vpsServerHost
+            val myId = prefsManager.myId
+            if (host.isNotEmpty() && myId.isNotEmpty()) {
+                NetworkRelay.registerId(
+                    vpsHost = host,
+                    myId = myId,
+                    deviceId = prefsManager.deviceId,
+                    city = detectedCity
+                ) { _, _ -> }
+            }
+        }
+
         setContent {
             MeowlDigitalAppUI()
         }
+    }
+
+    private val voicemailReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == "com.meowl.app.ACTION_NEW_VOICEMAIL_DOWNLOADED") {
+                refreshVoicemailList()
+                visualState = AppVisualState.NOTIFY
+                Toast.makeText(this@MainActivity, "Pesan Voicemail Baru Masuk!", Toast.LENGTH_SHORT).show()
+                MeowlCatWidgetProvider.updateAllWidgets(this@MainActivity, "NOTIFY", "PESAN BARU", unreadCount)
+
+                mainHandler.postDelayed({
+                    if (visualState == AppVisualState.NOTIFY) {
+                        visualState = AppVisualState.IDLE
+                        MeowlCatWidgetProvider.updateAllWidgets(this@MainActivity, "IDLE", "ONLINE · READY", unreadCount)
+                    }
+                }, 4000)
+            }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val filter = IntentFilter("com.meowl.app.ACTION_NEW_VOICEMAIL_DOWNLOADED")
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(voicemailReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
+        } else {
+            registerReceiver(voicemailReceiver, filter)
+        }
+        refreshVoicemailList()
+
+        sensorManager = getSystemService(Context.SENSOR_SERVICE) as? SensorManager
+        accelerometer = sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+        accelerometer?.let {
+            sensorManager?.registerListener(sensorListener, it, SensorManager.SENSOR_DELAY_GAME)
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        sensorManager?.unregisterListener(sensorListener)
+        try {
+            unregisterReceiver(voicemailReceiver)
+        } catch (e: Exception) {}
     }
 
     override fun onDestroy() {
@@ -122,6 +290,9 @@ class MainActivity : ComponentActivity() {
             override fun run() {
                 val host = prefsManager.vpsServerHost
                 val myId = prefsManager.myId
+
+                // Always refresh local voicemail files to detect new background downloads immediately
+                refreshVoicemailList()
 
                 if (host.isNotEmpty() && myId.isNotEmpty() && visualState == AppVisualState.IDLE) {
                     // 1. Check for incoming Heart Pings
@@ -552,11 +723,24 @@ class MainActivity : ComponentActivity() {
         var elapsedSeconds by remember { mutableStateOf(0) }
 
         LaunchedEffect(visualState) {
-            if (visualState == AppVisualState.RECORDING || visualState == AppVisualState.PLAYING) {
+            if (visualState == AppVisualState.RECORDING) {
                 elapsedSeconds = 0
                 while (isActive) {
                     delay(1000L)
                     elapsedSeconds += 1
+                }
+            } else if (visualState == AppVisualState.PLAYING) {
+                while (isActive) {
+                    val posSec = audioPlayer.getCurrentPosition() / 1000
+                    if (posSec >= 0) {
+                        elapsedSeconds = posSec
+                    }
+                    delay(200L)
+                }
+            } else if (visualState == AppVisualState.PAUSED) {
+                val posSec = audioPlayer.getCurrentPosition() / 1000
+                if (posSec > 0) {
+                    elapsedSeconds = posSec
                 }
             } else {
                 elapsedSeconds = 0
@@ -762,7 +946,8 @@ class MainActivity : ComponentActivity() {
                                     .border(2.dp, Color(0xFF1A1A1A), RoundedCornerShape(10.dp)),
                                 contentAlignment = Alignment.Center
                             ) {
-                                // Top Overlay Header: Partner City & Timezone Clock
+                                // Top Overlay Header: Partner City, Distance KM & Timezone Clock
+                                val distanceKm = LdrLocationHelper.calculateDistanceKm(CityLocationHelper.currentCityName, partnerCityText)
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -772,11 +957,11 @@ class MainActivity : ComponentActivity() {
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
-                                        text = partnerCityText.uppercase(java.util.Locale.getDefault()),
+                                        text = if (enableDistanceCounterState && distanceKm > 0) "${distanceKm}KM • ${partnerCityText.uppercase(java.util.Locale.getDefault())}" else partnerCityText.uppercase(java.util.Locale.getDefault()),
                                         color = Color(0xFF00F5FF).copy(alpha = 0.75f),
-                                        fontSize = 7.sp,
+                                        fontSize = 6.5.sp,
                                         fontWeight = FontWeight.Bold,
-                                        letterSpacing = 0.5.sp
+                                        letterSpacing = 0.3.sp
                                     )
                                     Text(
                                         text = partnerLiveTime,
@@ -789,7 +974,10 @@ class MainActivity : ComponentActivity() {
                                 when (visualState) {
                                     AppVisualState.IDLE -> {
                                         Row(
-                                            modifier = Modifier.offset(x = eyeGazeOffsetX.dp),
+                                            modifier = Modifier.offset(
+                                                x = (eyeGazeOffsetX + shakeOffsetX).dp,
+                                                y = shakeOffsetY.dp
+                                            ),
                                             horizontalArrangement = Arrangement.spacedBy(18.dp),
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
@@ -833,9 +1021,13 @@ class MainActivity : ComponentActivity() {
                                         }
                                     }
                                     AppVisualState.PAUSED -> {
-                                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                            Box(modifier = Modifier.size(width = 6.dp, height = 22.dp).background(Color(0xFFFBBF24), RoundedCornerShape(3.dp)))
-                                            Box(modifier = Modifier.size(width = 6.dp, height = 22.dp).background(Color(0xFFFBBF24), RoundedCornerShape(3.dp)))
+                                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                            Text(formattedTimer, color = Color(0xFFFBBF24), fontWeight = FontWeight.Bold, fontSize = 10.sp)
+                                            Spacer(modifier = Modifier.height(2.dp))
+                                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                                Box(modifier = Modifier.size(width = 6.dp, height = 18.dp).background(Color(0xFFFBBF24), RoundedCornerShape(3.dp)))
+                                                Box(modifier = Modifier.size(width = 6.dp, height = 18.dp).background(Color(0xFFFBBF24), RoundedCornerShape(3.dp)))
+                                            }
                                         }
                                     }
                                     AppVisualState.PING -> {
@@ -861,6 +1053,51 @@ class MainActivity : ComponentActivity() {
                                                 fontWeight = FontWeight.Bold,
                                                 fontSize = 10.sp
                                             )
+                                        }
+                                    }
+                                    AppVisualState.DIZZY -> {
+                                        val dizzyAngle by rememberInfiniteTransition(label = "dizzy").animateFloat(
+                                            initialValue = 0f,
+                                            targetValue = 360f,
+                                            animationSpec = infiniteRepeatable(
+                                                animation = tween(350, easing = LinearEasing),
+                                                repeatMode = RepeatMode.Restart
+                                            ),
+                                            label = "dizzyAngle"
+                                        )
+
+                                        Row(
+                                            horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(24.dp)
+                                                    .rotate(dizzyAngle)
+                                                    .background(Color(0xFF00F5FF), CircleShape)
+                                                    .border(2.dp, Color.Black, CircleShape),
+                                                contentAlignment = Alignment.TopCenter
+                                            ) {
+                                                Box(
+                                                    modifier = Modifier
+                                                        .size(7.dp)
+                                                        .background(Color.Black, CircleShape)
+                                                )
+                                            }
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(24.dp)
+                                                    .rotate(-dizzyAngle)
+                                                    .background(Color(0xFF00F5FF), CircleShape)
+                                                    .border(2.dp, Color.Black, CircleShape),
+                                                contentAlignment = Alignment.BottomCenter
+                                            ) {
+                                                Box(
+                                                    modifier = Modifier
+                                                        .size(7.dp)
+                                                        .background(Color.Black, CircleShape)
+                                                )
+                                            }
                                         }
                                     }
                                 }
@@ -1389,6 +1626,66 @@ class MainActivity : ComponentActivity() {
                                         }
                                     }
                                 }
+
+                                // 💖 MODULAR LDR FEATURE SUITE TOGGLES
+                                HorizontalDivider(color = textMutedColor.copy(alpha = 0.2f), modifier = Modifier.padding(vertical = 4.dp))
+                                Text(if (currentLangState == "EN") "💖 LDR Special Features (Option Toggles)" else "💖 Fitur Spesial LDR (Sakelar Opsi)", color = Color(0xFFFF6EB4), fontWeight = FontWeight.Bold, fontSize = 12.sp)
+
+                                // 1. Distance Counter & Meetup Countdown
+                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                                    Text("✈️ Hitung Jarak (KM) & Meetup", color = textPrimaryColor, fontSize = 11.sp)
+                                    Switch(checked = enableDistanceCounterState, onCheckedChange = { enableDistanceCounterState = it })
+                                }
+
+                                // 2. Time Capsule Voicemail
+                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                                    Text("🔒 Time Capsule Voicemail", color = textPrimaryColor, fontSize = 11.sp)
+                                    Switch(checked = enableTimeCapsuleState, onCheckedChange = { enableTimeCapsuleState = it })
+                                }
+
+                                // 3. Heartbeat Hug Vibration
+                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                                    Text("💓 Getaran Heartbeat Hug", color = textPrimaryColor, fontSize = 11.sp)
+                                    Switch(checked = enableHeartbeatHugState, onCheckedChange = { enableHeartbeatHugState = it })
+                                }
+
+                                // 4. Shared Mood Indicator
+                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                                    Text("😊 Shared Mood Indicator", color = textPrimaryColor, fontSize = 11.sp)
+                                    Switch(checked = enableMoodIndicatorState, onCheckedChange = { enableMoodIndicatorState = it })
+                                }
+
+                                // Mood Selector
+                                if (enableMoodIndicatorState) {
+                                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                        val moods = listOf("HAPPY" to "😊", "BUSY" to "🤫", "NEED_HUGS" to "🤗", "MISS_YOU" to "💖", "SLEEPY" to "😴")
+                                        moods.forEach { (mKey, mIcon) ->
+                                            FilterChip(
+                                                selected = (myCurrentMoodState == mKey),
+                                                onClick = { myCurrentMoodState = mKey },
+                                                label = { Text("$mIcon $mKey", fontSize = 8.sp) }
+                                            )
+                                        }
+                                    }
+                                }
+
+                                // 5. Daily Love Prompt
+                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                                    Text("💌 Pertanyaan Cinta Harian", color = textPrimaryColor, fontSize = 11.sp)
+                                    Switch(checked = enableDailyPromptState, onCheckedChange = { enableDailyPromptState = it })
+                                }
+
+                                // 6. Quick Voice Reactions
+                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                                    Text("🐱 Reaksi Suara Cepat", color = textPrimaryColor, fontSize = 11.sp)
+                                    Switch(checked = enableVoiceReactionsState, onCheckedChange = { enableVoiceReactionsState = it })
+                                }
+
+                                // 7. Ambient Mood Light
+                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                                    Text("🕯️ Ambient Mood Light", color = textPrimaryColor, fontSize = 11.sp)
+                                    Switch(checked = enableMoodLightState, onCheckedChange = { enableMoodLightState = it })
+                                }
                             }
                         },
                         confirmButton = {
@@ -1398,36 +1695,43 @@ class MainActivity : ComponentActivity() {
                                     val cleanTargetId = targetIdText.trim()
                                     val host = vpsHostText.trim()
 
+                                    // Save LDR Toggles
+                                    prefsManager.enableDistanceCounter = enableDistanceCounterState
+                                    prefsManager.enableTimeCapsule = enableTimeCapsuleState
+                                    prefsManager.enableHeartbeatHug = enableHeartbeatHugState
+                                    prefsManager.enableMoodIndicator = enableMoodIndicatorState
+                                    prefsManager.myCurrentMood = myCurrentMoodState
+                                    prefsManager.enableDailyPrompt = enableDailyPromptState
+                                    prefsManager.enableVoiceReactions = enableVoiceReactionsState
+                                    prefsManager.enableMoodLight = enableMoodLightState
+
                                     if (cleanMyId.isNotEmpty() && host.isNotEmpty()) {
-                                        NetworkRelay.registerId(host, cleanMyId, prefsManager.deviceId) { success, errorMsg ->
-                                            if (success) {
-                                                prefsManager.myId = cleanMyId
-                                                prefsManager.targetId = cleanTargetId
-                                                prefsManager.vpsServerHost = host
-                                                prefsManager.speakerGain = gainSlider.toInt()
-                                                prefsManager.casingTheme = themeColor
-                                                prefsManager.appLanguage = currentLangState
-                                                prefsManager.partnerCity = partnerCityText.trim()
-                                                prefsManager.partnerTimezone = partnerTzText.trim()
-                                                showSettingsDialog = false
+                                        CityLocationHelper.detectLocalCity(this@MainActivity) { detectedCity ->
+                                            NetworkRelay.registerId(host, cleanMyId, prefsManager.deviceId, city = detectedCity, mood = myCurrentMoodState) { success, errorMsg ->
+                                                if (success) {
+                                                    prefsManager.myId = cleanMyId
+                                                    prefsManager.targetId = cleanTargetId
+                                                    prefsManager.vpsServerHost = host
+                                                    prefsManager.speakerGain = gainSlider.toInt()
+                                                    prefsManager.casingTheme = themeColor
+                                                    prefsManager.appLanguage = currentLangState
+                                                    prefsManager.partnerCity = partnerCityText.trim()
+                                                    prefsManager.partnerTimezone = partnerTzText.trim()
+                                                    showSettingsDialog = false
 
-                                                updateAppIcon(themeColor)
+                                                    updateAppIcon(themeColor)
 
-                                                if (cleanTargetId.isNotEmpty()) {
-                                                    NetworkRelay.sendConnectRequest(host, cleanMyId, cleanTargetId) { reqSent ->
-                                                        if (reqSent) {
-                                                            val msg = if (currentLangState == "EN") "Connection request sent to $cleanTargetId" else "Permintaan koneksi dikirim ke $cleanTargetId"
-                                                            Toast.makeText(this@MainActivity, msg, Toast.LENGTH_SHORT).show()
+                                                    if (cleanTargetId.isNotEmpty()) {
+                                                        NetworkRelay.sendConnectRequest(host, cleanMyId, cleanTargetId) { reqSent ->
+                                                            if (reqSent) {
+                                                                val msg = if (currentLangState == "EN") "Connection request sent to $cleanTargetId" else "Permintaan koneksi dikirim ke $cleanTargetId"
+                                                                Toast.makeText(this@MainActivity, msg, Toast.LENGTH_SHORT).show()
+                                                            }
                                                         }
                                                     }
+                                                } else {
+                                                    Toast.makeText(this@MainActivity, errorMsg ?: "ID sudah digunakan!", Toast.LENGTH_LONG).show()
                                                 }
-
-                                                refreshVoicemailList()
-                                                MeowlCatWidgetProvider.updateAllWidgets(this@MainActivity, "IDLE", "ONLINE · READY", unreadCount)
-                                                val saveMsg = if (currentLangState == "EN") "Settings & ID Saved!" else "Pengaturan & ID tersimpan!"
-                                                Toast.makeText(this@MainActivity, saveMsg, Toast.LENGTH_SHORT).show()
-                                            } else {
-                                                Toast.makeText(this@MainActivity, errorMsg ?: "ID sudah digunakan!", Toast.LENGTH_LONG).show()
                                             }
                                         }
                                     } else {
