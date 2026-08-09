@@ -1,6 +1,7 @@
 package com.meowl.app
 
 import android.Manifest
+import android.content.ComponentName
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Handler
@@ -41,6 +42,8 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 
 enum class AppVisualState {
     IDLE, RECORDING, PLAYING, PAUSED, PING, NOTIFY
@@ -99,6 +102,7 @@ class MainActivity : ComponentActivity() {
      * Periodic 5s Network Polling: Syncs incoming Pings and Voicemails from VPS
      */
     private fun startPeriodicVpsSync() {
+        syncRunnable?.let { mainHandler.removeCallbacks(it) }
         syncRunnable = object : Runnable {
             override fun run() {
                 val host = prefsManager.vpsServerHost
@@ -109,7 +113,7 @@ class MainActivity : ComponentActivity() {
                     NetworkRelay.checkPing(host, myId) { hasPing ->
                         if (hasPing) {
                             visualState = AppVisualState.PING
-                            Toast.makeText(this@MainActivity, "Menerima Ping Hati dari Pasangan!", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this@MainActivity, "Menerima Ping Hati!", Toast.LENGTH_SHORT).show()
                             MeowlCatWidgetProvider.updateAllWidgets(this@MainActivity, "PING", "PING RECEIVED!", unreadCount)
                             
                             mainHandler.postDelayed({
@@ -194,16 +198,18 @@ class MainActivity : ComponentActivity() {
      * Delete Voicemail permanently from both Local Storage and VPS Server
      */
     private fun deleteVoicemail(file: File) {
+        if (playingFilePath == file.absolutePath) {
+            stopPlayback()
+        }
+
         val originalName = file.name
             .replace("lama_", "baru_")
             .replace("fav_", "baru_")
 
-        // 1. Delete file permanently from local storage
         if (file.exists() && file.delete()) {
             refreshVoicemailList()
             Toast.makeText(this, "Voicemail dihapus", Toast.LENGTH_SHORT).show()
 
-            // 2. Also ensure remote copy is deleted from VPS server so it never re-downloads
             NetworkRelay.deleteRemoteFile(prefsManager.vpsServerHost, prefsManager.myId, originalName) {}
             NetworkRelay.deleteRemoteFile(prefsManager.vpsServerHost, prefsManager.myId, file.name) {}
         }
@@ -215,21 +221,67 @@ class MainActivity : ComponentActivity() {
             return
         }
 
-        playingFilePath = file.absolutePath
+        val targetFile = if (file.name.startsWith("baru_")) {
+            val parent = file.parentFile
+            val tf = File(parent, file.name.replace("baru_", "lama_"))
+            file.renameTo(tf)
+            tf
+        } else file
+
+        playingFilePath = targetFile.absolutePath
         visualState = AppVisualState.PLAYING
         MeowlCatWidgetProvider.updateAllWidgets(this, "PLAYING", "PLAYING AUDIO", unreadCount)
+        refreshVoicemailList()
 
-        if (file.name.startsWith("baru_")) {
-            val parent = file.parentFile
-            val targetFile = File(parent, file.name.replace("baru_", "lama_"))
-            file.renameTo(targetFile)
-        }
-
-        audioPlayer.playAudioFile(file) {
+        audioPlayer.playAudioFile(targetFile) {
             visualState = AppVisualState.IDLE
             playingFilePath = null
             refreshVoicemailList()
             MeowlCatWidgetProvider.updateAllWidgets(this, "IDLE", "ONLINE · READY", unreadCount)
+        }
+    }
+
+    private fun playAllUnreadVoicemails() {
+        val unreadFiles = voicemailFiles.filter { it.name.startsWith("baru_") }.sortedBy { it.lastModified() }
+        if (unreadFiles.isEmpty()) {
+            if (voicemailFiles.isNotEmpty()) playSpecificVoicemail(voicemailFiles.first())
+            else Toast.makeText(this, "Tidak ada pesan", Toast.LENGTH_SHORT).show()
+            return
+        }
+        playVoicemailQueue(unreadFiles, 0)
+    }
+
+    private fun playVoicemailQueue(files: List<File>, index: Int) {
+        if (index >= files.size) {
+            visualState = AppVisualState.IDLE
+            playingFilePath = null
+            refreshVoicemailList()
+            MeowlCatWidgetProvider.updateAllWidgets(this, "IDLE", "ONLINE · READY", unreadCount)
+            return
+        }
+
+        val file = files[index]
+        if (!file.exists() || file.length() <= 0L) {
+            playVoicemailQueue(files, index + 1)
+            return
+        }
+
+        val targetFile = if (file.name.startsWith("baru_")) {
+            val tf = File(file.parentFile, file.name.replace("baru_", "lama_"))
+            file.renameTo(tf)
+            tf
+        } else file
+
+        playingFilePath = targetFile.absolutePath
+        visualState = AppVisualState.PLAYING
+        MeowlCatWidgetProvider.updateAllWidgets(this, "PLAYING", "PLAYING AUDIO", unreadCount)
+        refreshVoicemailList()
+
+        audioPlayer.playAudioFile(targetFile) {
+            // Only continue queue if still playing (not manually stopped/paused)
+            if (visualState == AppVisualState.PLAYING) {
+                playVoicemailQueue(files, index + 1)
+            }
         }
     }
 
@@ -253,6 +305,37 @@ class MainActivity : ComponentActivity() {
         MeowlCatWidgetProvider.updateAllWidgets(this, "IDLE", "ONLINE · READY", unreadCount)
     }
 
+    private fun updateAppIcon(themeName: String) {
+        val pm = packageManager
+        val aliases = listOf(
+            "com.meowl.app.MainActivity",
+            "com.meowl.app.MainActivityBlue",
+            "com.meowl.app.MainActivityPurple",
+            "com.meowl.app.MainActivityYellow"
+        )
+        
+        val targetAlias = when (themeName) {
+            "Blue" -> "com.meowl.app.MainActivityBlue"
+            "Purple" -> "com.meowl.app.MainActivityPurple"
+            "Yellow" -> "com.meowl.app.MainActivityYellow"
+            else -> "com.meowl.app.MainActivity"
+        }
+
+        aliases.forEach { alias ->
+            val state = if (alias == targetAlias) {
+                PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+            } else {
+                PackageManager.COMPONENT_ENABLED_STATE_DISABLED
+            }
+            
+            pm.setComponentEnabledSetting(
+                ComponentName(this, alias),
+                state,
+                PackageManager.DONT_KILL_APP
+            )
+        }
+    }
+
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun MeowlDigitalAppUI() {
@@ -274,6 +357,20 @@ class MainActivity : ComponentActivity() {
             "Purple" -> listOf(Color(0xFFEADBFF), Color(0xFFC4A0F0), Color(0xFF9060D0))
             "Yellow" -> listOf(Color(0xFFFFFAD6), Color(0xFFF0E4A0), Color(0xFFD0C060))
             else -> listOf(Color(0xFFFFD6E5), Color(0xFFF0A0C0), Color(0xFFD48090))
+        }
+
+        val logoColor = when (themeColor) {
+            "Blue" -> Color(0xFF6090D0)
+            "Purple" -> Color(0xFF9060D0)
+            "Yellow" -> Color(0xFFD0C060)
+            else -> Color(0xFFFF6EB4)
+        }
+
+        val buttonAccentColor = when (themeColor) {
+            "Blue" -> Color(0xFF3C78B4)
+            "Purple" -> Color(0xFF643CB4)
+            "Yellow" -> Color(0xFFB4963C)
+            else -> Color(0xFFB45064)
         }
 
         val infiniteTransition = rememberInfiniteTransition(label = "sim_anims")
@@ -311,6 +408,22 @@ class MainActivity : ComponentActivity() {
             label = "heart_pulse"
         )
 
+        var elapsedSeconds by remember { mutableStateOf(0) }
+
+        LaunchedEffect(visualState) {
+            if (visualState == AppVisualState.RECORDING || visualState == AppVisualState.PLAYING) {
+                elapsedSeconds = 0
+                while (isActive) {
+                    delay(1000L)
+                    elapsedSeconds += 1
+                }
+            } else {
+                elapsedSeconds = 0
+            }
+        }
+
+        val formattedTimer = String.format("%02d:%02d", elapsedSeconds / 60, elapsedSeconds % 60)
+
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = appBgColor
@@ -334,7 +447,7 @@ class MainActivity : ComponentActivity() {
                             fontSize = 24.sp,
                             fontWeight = FontWeight.ExtraBold,
                             letterSpacing = 2.sp,
-                            color = Color(0xFFFF6EB4)
+                            color = logoColor
                         )
                         Text(
                             text = "Aplikasi & Home Screen AppWidget",
@@ -344,7 +457,7 @@ class MainActivity : ComponentActivity() {
                     }
 
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
-                        // Light / Dark Theme Switch Button (Custom Vector Sun/Moon Icon - Zero Emojis)
+                        // Light / Dark Theme Switch Button (Custom Vector Sun/Moon Icon)
                         IconButton(
                             onClick = {
                                 isDarkModeState = !isDarkModeState
@@ -528,11 +641,11 @@ class MainActivity : ComponentActivity() {
                                     }
                                     AppVisualState.RECORDING -> {
                                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                                                Box(modifier = Modifier.size(10.dp).background(Color(0xFFF87171), CircleShape))
-                                                Text("REC", color = Color(0xFFF87171), fontWeight = FontWeight.Bold, fontSize = 11.sp, letterSpacing = 2.sp)
+                                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                                Box(modifier = Modifier.size(8.dp).background(Color(0xFFF87171), CircleShape))
+                                                Text("REC $formattedTimer", color = Color(0xFFF87171), fontWeight = FontWeight.Bold, fontSize = 10.sp)
                                             }
-                                            Spacer(modifier = Modifier.height(4.dp))
+                                            Spacer(modifier = Modifier.height(2.dp))
                                             Row(horizontalArrangement = Arrangement.spacedBy(3.dp), verticalAlignment = Alignment.CenterVertically) {
                                                 listOf(recBar1, recBar2, recBar3, recBar1, recBar2, recBar3, recBar1).forEach { h ->
                                                     Box(modifier = Modifier.size(width = 3.dp, height = h.dp).background(Color(0xFFF87171), RoundedCornerShape(2.dp)))
@@ -542,12 +655,9 @@ class MainActivity : ComponentActivity() {
                                     }
                                     AppVisualState.PLAYING -> {
                                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                            Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-                                                Box(modifier = Modifier.size(width = 16.dp, height = 8.dp).background(Color(0xFF00F5FF), RoundedCornerShape(bottomStart = 10.dp, bottomEnd = 10.dp)))
-                                                Box(modifier = Modifier.size(width = 16.dp, height = 8.dp).background(Color(0xFF00F5FF), RoundedCornerShape(bottomStart = 10.dp, bottomEnd = 10.dp)))
-                                            }
-                                            Spacer(modifier = Modifier.height(4.dp))
-                                            Row(horizontalArrangement = Arrangement.spacedBy(3.dp), verticalAlignment = Alignment.Bottom, modifier = Modifier.height(24.dp)) {
+                                            Text(formattedTimer, color = Color(0xFF00F5FF), fontWeight = FontWeight.Bold, fontSize = 10.sp)
+                                            Spacer(modifier = Modifier.height(2.dp))
+                                            Row(horizontalArrangement = Arrangement.spacedBy(3.dp), verticalAlignment = Alignment.Bottom, modifier = Modifier.height(20.dp)) {
                                                 Box(modifier = Modifier.size(width = 6.dp, height = viz1.dp).background(Color(0xFF00F5FF), RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp)))
                                                 Box(modifier = Modifier.size(width = 6.dp, height = viz2.dp).background(Color(0xFF00F5FF), RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp)))
                                                 Box(modifier = Modifier.size(width = 6.dp, height = viz3.dp).background(Color(0xFF00F5FF), RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp)))
@@ -598,9 +708,9 @@ class MainActivity : ComponentActivity() {
                                     .width(32.dp)
                                     .height(12.dp)
                                     .clip(RoundedCornerShape(6.dp))
-                                    .background(Color(0x80B45064))
+                                    .background(buttonAccentColor.copy(alpha = 0.5f))
                                     .clickable {
-                                        if (voicemailFiles.isNotEmpty()) playSpecificVoicemail(voicemailFiles.first())
+                                        if (voicemailFiles.isNotEmpty()) playAllUnreadVoicemails()
                                     },
                                 contentAlignment = Alignment.Center
                             ) {
@@ -615,7 +725,7 @@ class MainActivity : ComponentActivity() {
                                     Box(
                                         modifier = Modifier
                                             .size(width = 2.dp, height = 10.dp)
-                                            .background(Color(0x40B45064), RoundedCornerShape(2.dp))
+                                            .background(buttonAccentColor.copy(alpha = 0.3f), RoundedCornerShape(2.dp))
                                     )
                                 }
                             }
@@ -712,7 +822,7 @@ class MainActivity : ComponentActivity() {
                                 horizontalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
                                 Button(
-                                    onClick = { if (voicemailFiles.isNotEmpty()) playSpecificVoicemail(voicemailFiles.first()) },
+                                    onClick = { if (voicemailFiles.isNotEmpty()) playAllUnreadVoicemails() },
                                     modifier = Modifier.weight(1f),
                                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00F5FF), contentColor = Color.Black)
                                 ) {
@@ -943,12 +1053,14 @@ class MainActivity : ComponentActivity() {
                                     value = myIdText,
                                     onValueChange = { myIdText = it },
                                     label = { Text("My Device ID") },
+                                    placeholder = { Text("Isikan ID Anda") },
                                     modifier = Modifier.fillMaxWidth()
                                 )
                                 OutlinedTextField(
                                     value = targetIdText,
                                     onValueChange = { targetIdText = it },
                                     label = { Text("Target Partner ID") },
+                                    placeholder = { Text("Isikan ID Tujuan") },
                                     modifier = Modifier.fillMaxWidth()
                                 )
                                 OutlinedTextField(
@@ -990,18 +1102,18 @@ class MainActivity : ComponentActivity() {
                                     onValueChange = { gainSlider = it },
                                     valueRange = 10f..100f
                                 )
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
+                                Column(modifier = Modifier.fillMaxWidth()) {
                                     Text("Tema Casing:", color = textMutedColor, fontSize = 12.sp)
-                                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                                        listOf("Pink", "Blue", "Purple").forEach { color ->
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+                                        listOf("Pink", "Blue", "Purple", "Yellow").forEach { color ->
                                             FilterChip(
                                                 selected = (themeColor == color),
                                                 onClick = { themeColor = color },
-                                                label = { Text(color, fontSize = 10.sp) }
+                                                label = { Text(color, fontSize = 9.sp) }
                                             )
                                         }
                                     }
@@ -1011,16 +1123,43 @@ class MainActivity : ComponentActivity() {
                         confirmButton = {
                             Button(
                                 onClick = {
-                                    prefsManager.myId = myIdText
-                                    prefsManager.targetId = targetIdText
-                                    prefsManager.vpsServerHost = vpsHostText
-                                    prefsManager.speakerGain = gainSlider.toInt()
-                                    prefsManager.casingTheme = themeColor
-                                    showSettingsDialog = false
+                                    val cleanMyId = myIdText.trim()
+                                    val cleanTargetId = targetIdText.trim()
+                                    val host = vpsHostText.trim()
 
-                                    refreshVoicemailList()
-                                    MeowlCatWidgetProvider.updateAllWidgets(this@MainActivity, "IDLE", "ONLINE · READY", unreadCount)
-                                    Toast.makeText(this@MainActivity, "Pengaturan tersimpan", Toast.LENGTH_SHORT).show()
+                                    if (cleanMyId.isNotEmpty() && host.isNotEmpty()) {
+                                        NetworkRelay.registerId(host, cleanMyId, prefsManager.deviceId) { success, errorMsg ->
+                                            if (success) {
+                                                prefsManager.myId = cleanMyId
+                                                prefsManager.targetId = cleanTargetId
+                                                prefsManager.vpsServerHost = host
+                                                prefsManager.speakerGain = gainSlider.toInt()
+                                                prefsManager.casingTheme = themeColor
+                                                showSettingsDialog = false
+
+                                                updateAppIcon(themeColor)
+
+                                                refreshVoicemailList()
+                                                MeowlCatWidgetProvider.updateAllWidgets(this@MainActivity, "IDLE", "ONLINE · READY", unreadCount)
+                                                Toast.makeText(this@MainActivity, "Pengaturan & ID tersimpan!", Toast.LENGTH_SHORT).show()
+                                            } else {
+                                                Toast.makeText(this@MainActivity, errorMsg ?: "ID sudah digunakan!", Toast.LENGTH_LONG).show()
+                                            }
+                                        }
+                                    } else {
+                                        prefsManager.myId = cleanMyId
+                                        prefsManager.targetId = cleanTargetId
+                                        prefsManager.vpsServerHost = host
+                                        prefsManager.speakerGain = gainSlider.toInt()
+                                        prefsManager.casingTheme = themeColor
+                                        showSettingsDialog = false
+
+                                        updateAppIcon(themeColor)
+
+                                        refreshVoicemailList()
+                                        MeowlCatWidgetProvider.updateAllWidgets(this@MainActivity, "IDLE", "ONLINE · READY", unreadCount)
+                                        Toast.makeText(this@MainActivity, "Pengaturan tersimpan", Toast.LENGTH_SHORT).show()
+                                    }
                                 }
                             ) {
                                 Text("Simpan")

@@ -17,6 +17,7 @@ import com.meowl.app.audio.AudioPlayer
 import com.meowl.app.audio.AudioRecorder
 import com.meowl.app.data.PreferencesManager
 import com.meowl.app.network.NetworkRelay
+import java.io.File
 import java.util.Locale
 
 /**
@@ -68,6 +69,7 @@ class MeowlCatWidgetProvider : AppWidgetProvider() {
                 val (casingRes, earLeftRes, earRightRes) = when (prefs.casingTheme) {
                     "Blue" -> Triple(R.drawable.bg_cat_casing_blue, R.drawable.ic_cat_ear_left_blue, R.drawable.ic_cat_ear_right_blue)
                     "Purple" -> Triple(R.drawable.bg_cat_casing_purple, R.drawable.ic_cat_ear_left_purple, R.drawable.ic_cat_ear_right_purple)
+                    "Yellow" -> Triple(R.drawable.bg_cat_casing_yellow, R.drawable.ic_cat_ear_left_yellow, R.drawable.ic_cat_ear_right_yellow)
                     else -> Triple(R.drawable.bg_cat_casing_pink, R.drawable.ic_cat_ear_left, R.drawable.ic_cat_ear_right)
                 }
 
@@ -102,6 +104,19 @@ class MeowlCatWidgetProvider : AppWidgetProvider() {
                 views.setViewVisibility(R.id.layout_widget_normal_btns, if (!isRec && !isPlay) View.VISIBLE else View.GONE)
                 views.setViewVisibility(R.id.layout_widget_play_btns, if (isPlay) View.VISIBLE else View.GONE)
                 views.setViewVisibility(R.id.layout_widget_rec_btns, if (isRec) View.VISIBLE else View.GONE)
+
+                // Live Chronometer Timers for Recording & Playing
+                if (isRec) {
+                    views.setChronometer(R.id.chrono_widget_rec, android.os.SystemClock.elapsedRealtime(), "%s", true)
+                } else {
+                    views.setChronometer(R.id.chrono_widget_rec, android.os.SystemClock.elapsedRealtime(), "%s", false)
+                }
+
+                if (state == "PLAYING") {
+                    views.setChronometer(R.id.chrono_widget_play, android.os.SystemClock.elapsedRealtime(), "%s", true)
+                } else {
+                    views.setChronometer(R.id.chrono_widget_play, android.os.SystemClock.elapsedRealtime(), "%s", false)
+                }
 
                 // Change PAUSE button text dynamically
                 views.setTextViewText(R.id.btn_widget_pause, if (state == "PAUSED") "RESUME" else "PAUSE")
@@ -147,6 +162,47 @@ class MeowlCatWidgetProvider : AppWidgetProvider() {
                 e.printStackTrace()
             }
         }
+
+        private fun getLatestVoicemail(context: Context): File? {
+            val folder = File(context.filesDir, "voicemails")
+            if (!folder.exists()) return null
+            val files = folder.listFiles()?.filter {
+                (it.extension == "wav" || it.extension == "3gp") && !it.name.startsWith("kirim_")
+            } ?: return null
+            return files.maxByOrNull { it.lastModified() }
+        }
+
+        private fun getAllUnreadVoicemails(context: Context): List<File> {
+            val folder = File(context.filesDir, "voicemails")
+            if (!folder.exists()) return emptyList()
+            val files = folder.listFiles()?.filter {
+                (it.extension == "wav" || it.extension == "3gp")
+            } ?: return emptyList()
+            return files.filter { it.name.startsWith("baru_") }.sortedBy { it.lastModified() }
+        }
+
+        private fun playWidgetQueue(context: Context, files: List<File>, index: Int) {
+            if (index >= files.size || !isWidgetPlaying) {
+                isWidgetPlaying = false
+                mainHandler.post {
+                    updateAllWidgets(context, "IDLE", "ONLINE · READY", 0)
+                }
+                return
+            }
+
+            val file = files[index]
+            
+            // Mark as read immediately when played
+            val fileToPlay = if (file.name.startsWith("baru_")) {
+                val targetFile = File(file.parentFile, file.name.replace("baru_", "lama_"))
+                file.renameTo(targetFile)
+                targetFile
+            } else file
+
+            widgetPlayer?.playAudioFile(fileToPlay) {
+                playWidgetQueue(context, files, index + 1)
+            }
+        }
     }
 
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
@@ -161,22 +217,48 @@ class MeowlCatWidgetProvider : AppWidgetProvider() {
 
         when (intent.action) {
             ACTION_WIDGET_TAP_PLAY -> {
-                Toast.makeText(context, "Memutar voicemail...", Toast.LENGTH_SHORT).show()
-                isWidgetPlaying = true
-                updateAllWidgets(context, "PLAYING", "PLAYING AUDIO", 0)
+                val unreadFiles = getAllUnreadVoicemails(context)
+                if (unreadFiles.isNotEmpty()) {
+                    Toast.makeText(context, "Memutar pesan baru...", Toast.LENGTH_SHORT).show()
+                    isWidgetPlaying = true
+                    updateAllWidgets(context, "PLAYING", "PLAYING AUDIO", 0)
+                    if (widgetPlayer == null) widgetPlayer = AudioPlayer(context)
+
+                    playWidgetQueue(context, unreadFiles, 0)
+                } else {
+                    val latestFile = getLatestVoicemail(context)
+                    if (latestFile != null) {
+                        Toast.makeText(context, "Memutar voicemail...", Toast.LENGTH_SHORT).show()
+                        isWidgetPlaying = true
+                        updateAllWidgets(context, "PLAYING", "PLAYING AUDIO", 0)
+
+                        if (widgetPlayer == null) widgetPlayer = AudioPlayer(context)
+                        widgetPlayer?.playAudioFile(latestFile) {
+                            isWidgetPlaying = false
+                            mainHandler.post {
+                                updateAllWidgets(context, "IDLE", "ONLINE · READY", 0)
+                            }
+                        }
+                    } else {
+                        Toast.makeText(context, "Tidak ada pesan voicemail", Toast.LENGTH_SHORT).show()
+                    }
+                }
             }
             ACTION_WIDGET_TAP_PAUSE -> {
                 if (isWidgetPlaying) {
+                    widgetPlayer?.pauseAudio()
                     isWidgetPlaying = false
                     Toast.makeText(context, "Pemutaran dijeda", Toast.LENGTH_SHORT).show()
                     updateAllWidgets(context, "PAUSED", "AUDIO PAUSED", 0)
                 } else {
+                    widgetPlayer?.resumeAudio()
                     isWidgetPlaying = true
                     Toast.makeText(context, "Lanjut memutar", Toast.LENGTH_SHORT).show()
                     updateAllWidgets(context, "PLAYING", "PLAYING AUDIO", 0)
                 }
             }
             ACTION_WIDGET_STOP_PLAY -> {
+                widgetPlayer?.stopAudio()
                 isWidgetPlaying = false
                 Toast.makeText(context, "Pemutaran dihentikan", Toast.LENGTH_SHORT).show()
                 updateAllWidgets(context, "IDLE", "ONLINE · READY", 0)

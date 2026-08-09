@@ -29,6 +29,44 @@ object NetworkRelay {
     }
 
     /**
+     * Register/Claim ID on VPS server with Device UUID to prevent ID duplication
+     */
+    fun registerId(vpsHost: String, myId: String, deviceId: String, onResult: (Boolean, String?) -> Unit) {
+        Thread {
+            try {
+                val urlStr = "${normalizeHost(vpsHost)}/register-id"
+                val url = URL(urlStr)
+                val conn = (url.openConnection() as HttpURLConnection).apply {
+                    requestMethod = "POST"
+                    connectTimeout = 6000
+                    readTimeout = 6000
+                    doOutput = true
+                    setRequestProperty("Content-Type", "application/json")
+                }
+                val payload = JSONObject().apply {
+                    put("id", myId)
+                    put("deviceId", deviceId)
+                }.toString()
+
+                conn.outputStream.use { it.write(payload.toByteArray(Charsets.UTF_8)) }
+                val code = conn.responseCode
+                val stream = if (code in 200..299) conn.inputStream else conn.errorStream
+                val responseText = stream?.bufferedReader()?.use { it.readText() } ?: ""
+                conn.disconnect()
+
+                val json = if (responseText.isNotEmpty()) JSONObject(responseText) else JSONObject()
+                val success = (code == 200) && json.optBoolean("success", false)
+                val errorMsg = json.optString("error", if (!success) "Gagal mendaftarkan ID" else null)
+
+                mainHandler.post { onResult(success, if (!success) errorMsg else null) }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                mainHandler.post { onResult(false, "Gagal terhubung ke server VPS") }
+            }
+        }.start()
+    }
+
+    /**
      * Send Ping Hati Signal to Partner (target_id) via VPS REST API
      */
     fun sendPing(vpsHost: String, targetId: String, onResult: (Boolean) -> Unit) {
@@ -171,12 +209,20 @@ object NetworkRelay {
                     readTimeout = 8000
                 }
                 if (conn.responseCode == 200) {
+                    val tempFile = File(destFile.parentFile, "${destFile.name}.tmp")
                     conn.inputStream.use { input ->
-                        FileOutputStream(destFile).use { output ->
+                        FileOutputStream(tempFile).use { output ->
                             input.copyTo(output)
                         }
                     }
                     conn.disconnect()
+
+                    // Atomic rename to prevent partial/corrupted files if download drops
+                    if (tempFile.exists() && tempFile.length() > 0) {
+                        tempFile.renameTo(destFile)
+                    } else {
+                        tempFile.delete()
+                    }
 
                     // Extra safeguard: Confirm remote file deletion on server
                     deleteRemoteFile(vpsHost, myId, filename) {}

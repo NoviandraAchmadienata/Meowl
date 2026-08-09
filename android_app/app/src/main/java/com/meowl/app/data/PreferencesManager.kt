@@ -5,18 +5,20 @@ import android.content.SharedPreferences
 
 /**
  * SharedPreferences Manager for Meowl App Settings, Hardcoded IP, and Theme Configuration.
+ * Blank/empty ID form defaults so users can input their own IDs cleanly.
  */
 class PreferencesManager(context: Context) {
 
     private val prefs: SharedPreferences =
         context.getSharedPreferences("meowl_prefs", Context.MODE_PRIVATE)
 
+    // Blank default ID fields so forms start empty
     var myId: String
-        get() = prefs.getString("my_id", "andra_cat") ?: "andra_cat"
+        get() = prefs.getString("my_id", "") ?: ""
         set(value) = prefs.edit().putString("my_id", value).apply()
 
     var targetId: String
-        get() = prefs.getString("target_id", "partner_cat") ?: "partner_cat"
+        get() = prefs.getString("target_id", "") ?: ""
         set(value) = prefs.edit().putString("target_id", value).apply()
 
     // Default Hardcoded VPS Server Address
@@ -43,4 +45,15 @@ class PreferencesManager(context: Context) {
     var isEphemeralEnabled: Boolean
         get() = prefs.getBoolean("ephemeral_enabled", true)
         set(value) = prefs.edit().putBoolean("ephemeral_enabled", value).apply()
+
+    // Persistent Unique Device UUID for ID Ownership Registration
+    val deviceId: String
+        get() {
+            var id = prefs.getString("device_id", "")
+            if (id.isNullOrEmpty()) {
+                id = java.util.UUID.randomUUID().toString()
+                prefs.edit().putString("device_id", id).apply()
+            }
+            return id!!
+        }
 }

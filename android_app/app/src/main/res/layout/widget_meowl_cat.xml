@@ -139,13 +139,28 @@
                 android:gravity="center"
                 android:visibility="gone">
 
-                <TextView
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="REC ●"
-                    android:textColor="#F87171"
-                    android:textSize="10sp"
-                    android:textStyle="bold" />
+                    android:orientation="horizontal"
+                    android:gravity="center">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="REC ● "
+                        android:textColor="#F87171"
+                        android:textSize="9sp"
+                        android:textStyle="bold" />
+
+                    <Chronometer
+                        android:id="@+id/chrono_widget_rec"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="#F87171"
+                        android:textSize="9sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
 
                 <ViewFlipper
                     android:id="@+id/flipper_rec_bars"
@@ -178,7 +193,7 @@
                 </ViewFlipper>
             </LinearLayout>
 
-            <!-- 3. STATE PLAYING: Happy Half-Moon Eyes + 5 Visualizer Bars -->
+            <!-- 3. STATE PLAYING: Happy Half-Moon Eyes + 5 Visualizer Bars + Chronometer -->
             <LinearLayout
                 android:id="@+id/layout_playing_viz"
                 android:layout_width="wrap_content"
@@ -192,7 +207,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:layout_marginBottom="4dp">
+                    android:layout_marginBottom="2dp">
 
                     <TextView
                         android:layout_width="16dp"
@@ -205,6 +220,15 @@
                         android:layout_height="8dp"
                         android:background="@drawable/bg_btn_play" />
                 </LinearLayout>
+
+                <Chronometer
+                    android:id="@+id/chrono_widget_play"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#00F5FF"
+                    android:textSize="9sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="2dp" />
 
                 <ViewFlipper
                     android:id="@+id/flipper_viz"

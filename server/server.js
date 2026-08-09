@@ -47,6 +47,27 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 } // Max 5MB per WAV audio file
 });
 
+const REGISTERED_IDS_FILE = path.join(__dirname, 'registered_ids.json');
+
+function loadRegisteredIds() {
+  try {
+    if (fs.existsSync(REGISTERED_IDS_FILE)) {
+      return JSON.parse(fs.readFileSync(REGISTERED_IDS_FILE, 'utf8'));
+    }
+  } catch (e) {
+    console.error('Error reading registered_ids.json:', e.message);
+  }
+  return {};
+}
+
+function saveRegisteredIds(data) {
+  try {
+    fs.writeFileSync(REGISTERED_IDS_FILE, JSON.stringify(data, null, 2), 'utf8');
+  } catch (e) {
+    console.error('Error writing registered_ids.json:', e.message);
+  }
+}
+
 // ─── ROUTES ─────────────────────────────────────────────────────────────────
 
 // Health Check
@@ -57,6 +78,47 @@ app.get('/status', (req, res) => {
     timestamp: new Date().toISOString(),
     uptime: process.uptime()
   });
+});
+
+// HTTP POST Register/Claim ID (Prevents ID Duplication by other devices)
+app.post('/register-id', (req, res) => {
+  const { id, deviceId } = req.body || {};
+
+  if (!id || !deviceId) {
+    return res.status(400).json({ success: false, error: 'ID dan Device ID wajib diisi' });
+  }
+
+  const cleanId = id.trim();
+  const cleanDeviceId = deviceId.trim();
+  const registry = loadRegisteredIds();
+
+  if (registry[cleanId]) {
+    const existing = registry[cleanId];
+    if (existing.deviceId === cleanDeviceId) {
+      console.log(`[POST /register-id] Re-registered ID "${cleanId}" for same device: ${cleanDeviceId}`);
+      return res.status(200).json({ success: true, message: 'ID milik Anda' });
+    } else {
+      console.log(`[POST /register-id] REJECTED duplicate claim for ID "${cleanId}" by device: ${cleanDeviceId}`);
+      return res.status(409).json({ success: false, error: `ID "${cleanId}" sudah digunakan oleh orang lain!` });
+    }
+  }
+
+  registry[cleanId] = {
+    deviceId: cleanDeviceId,
+    registeredAt: new Date().toISOString()
+  };
+  saveRegisteredIds(registry);
+
+  console.log(`[POST /register-id] Successfully registered new ID "${cleanId}" for device: ${cleanDeviceId}`);
+  res.status(200).json({ success: true, message: 'ID berhasil didaftarkan' });
+});
+
+// HTTP GET Check ID Availability
+app.get('/check-id/:id', (req, res) => {
+  const cleanId = req.params.id.trim();
+  const registry = loadRegisteredIds();
+  const isTaken = !!registry[cleanId];
+  res.status(200).json({ id: cleanId, registered: isTaken });
 });
 
 // HTTP POST Send Ping Signal to target_id
